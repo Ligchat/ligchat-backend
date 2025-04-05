@@ -1,53 +1,44 @@
+name: Deploy to EC2
 
 on:
   push:
-    branches: [ "main" ]
-  pull_request:
-    branches: [ "main" ]
+    branches: [ main ]
 
 jobs:
   deploy:
     runs-on: ubuntu-latest
     
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v2
     
     - name: Setup .NET
-      uses: actions/setup-dotnet@v3
+      uses: actions/setup-dotnet@v1
       with:
-        dotnet-version: 8.0.x
+        dotnet-version: '8.0.x'
         
-    - name: Restore dependencies
-      run: dotnet restore LigChat.csproj
-      
-    - name: Clean Project
-      run: dotnet clean LigChat.csproj --configuration Release
+    - name: Install dependencies
+      run: dotnet restore
       
     - name: Build
-      run: dotnet build LigChat.csproj --no-restore --configuration Release
+      run: dotnet publish -c Release -o ./publish
       
-    - name: Setup SSH
-      run: |
-        mkdir -p ~/.ssh
-        echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_rsa
-        chmod 600 ~/.ssh/id_rsa
-        ssh-keyscan -H 3.90.210.19 >> ~/.ssh/known_hosts
-        eval "$(ssh-agent -s)"
-        ssh-add ~/.ssh/id_rsa
-        
     - name: Deploy to EC2
-      run: |
-        ssh -o StrictHostKeyChecking=no root@3.90.210.19 '
-          cd /var/www/ligchat-backend_new && 
-          git config --global --add safe.directory /var/www/ligchat-backend_new &&
-          git config --global user.email "deploy@example.com" &&
-          git config --global user.name "Deploy Bot" &&
-          git stash &&
-          git pull origin main &&
-          rm -f LigChat.deps.json &&
-          rm -f LigChat.runtimeconfig.json &&
-          rm -rf obj/Release/net8.0/* &&
-          rm -rf bin/Release/net8.0/* &&
-          dotnet publish LigChat.csproj -c Release -o /var/www/ligchat-backend_new/bin/Release/net8.0/ &&
-          systemctl restart ligchat-backend.service
-        '
+      uses: appleboy/scp-action@master
+      with:
+        host: ${{ secrets.HOST }}
+        username: ubuntu
+        key: ${{ secrets.SSH_PRIVATE_KEY }}
+        source: "./publish/*"
+        target: "/var/www/backend/ligchat-backend"
+        strip_components: 1
+        
+    - name: Execute remote commands
+      uses: appleboy/ssh-action@master
+      with:
+        host: ${{ secrets.HOST }}
+        username: ubuntu
+        key: ${{ secrets.SSH_PRIVATE_KEY }}
+        script: |
+          cd /var/www/backend/ligchat-backend
+          sudo systemctl restart ligchat-backend.service
+          sudo systemctl restart nginx
