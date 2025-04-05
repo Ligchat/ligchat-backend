@@ -44,10 +44,15 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Content Include="src\Templates\**\*.html">
+    <Content Include="src\Templates\**">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-      <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
     </Content>
+  </ItemGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Include="src\Templates\**\*.html">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </EmbeddedResource>
   </ItemGroup>
 
 </Project>
