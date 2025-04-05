@@ -133,7 +133,13 @@ namespace LigChat.Backend.Web.Controllers
                 await _userService.SaveVerificationCode(user.Data.Id, verificationCode);
 
                 // Carregar o template HTML
-                string templatePath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "SendCodeTemplate.html");
+                string templatePath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "src", "Templates", "SendCodeTemplate.html");
+
+                if (!System.IO.File.Exists(templatePath))
+                {
+                    Console.WriteLine($"Template não encontrado em: {templatePath}");
+                    return StatusCode(500, new { Message = "Error loading email template." });
+                }
 
                 string emailBody = await System.IO.File.ReadAllTextAsync(templatePath);
 
