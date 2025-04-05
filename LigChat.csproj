@@ -44,9 +44,10 @@
   </ItemGroup>
 
   <ItemGroup>
-    <None Include="src\Templates\**\*.html">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
+    <Content Include="src\Templates\**\*.html">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+    </Content>
   </ItemGroup>
 
 </Project>
