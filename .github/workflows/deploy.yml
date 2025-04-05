@@ -6,7 +6,7 @@ on:
 
 jobs:
   deploy:
-    runs-on: ubuntu-latest 
+    runs-on: ubuntu-latest
     
     steps:
     - uses: actions/checkout@v2
@@ -17,10 +17,22 @@ jobs:
         dotnet-version: '8.0.x'
         
     - name: Install dependencies
-      run: dotnet restore LigChat.csproj 
+      run: dotnet restore LigChat.csproj
       
     - name: Build
       run: dotnet publish LigChat.csproj -c Release -o ./publish
+      
+    - name: Setup Permissions
+      uses: appleboy/ssh-action@master
+      with:
+        host: ${{ secrets.HOST }}
+        username: ubuntu
+        key: ${{ secrets.SSH_PRIVATE_KEY }}
+        script: |
+          sudo chown -R ubuntu:ubuntu /var/www/backend/ligchat-backend
+          sudo chmod -R 755 /var/www/backend/ligchat-backend
+          sudo systemctl stop ligchat-backend.service
+          sudo rm -rf /var/www/backend/ligchat-backend/*
       
     - name: Deploy to EC2
       uses: appleboy/scp-action@master
@@ -31,8 +43,9 @@ jobs:
         source: "./publish/*"
         target: "/var/www/backend/ligchat-backend"
         strip_components: 1
+        overwrite: true
         
-    - name: Execute remote commands
+    - name: Post-deploy setup
       uses: appleboy/ssh-action@master
       with:
         host: ${{ secrets.HOST }}
@@ -40,5 +53,7 @@ jobs:
         key: ${{ secrets.SSH_PRIVATE_KEY }}
         script: |
           cd /var/www/backend/ligchat-backend
+          sudo chown -R www-data:www-data /var/www/backend/ligchat-backend
+          sudo chmod -R 755 /var/www/backend/ligchat-backend
           sudo systemctl restart ligchat-backend.service
           sudo systemctl restart nginx
