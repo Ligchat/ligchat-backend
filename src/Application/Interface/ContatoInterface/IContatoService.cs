@@ -1,14 +1,14 @@
 ﻿namespace tests_.src.Application.Interface.ContatoInterface
 {
+    using LigChat.Backend.Domain.Entities;
     using System.Collections.Generic;
-    using tests_.src.Domain.Entities;
 
     public interface IContatoService
     {
-        IEnumerable<Contato> GetAll(int sectorId);
-        Contato GetById(int id);
-        Contato Create(Contato contato);
-        void Update(Contato contato);
+        IEnumerable<Contact> GetAll(int sectorId);
+        Contact GetById(int id);
+        Contact Create(Contact contato);
+        void Update(Contact contato);
         void Delete(int id);
     }
 }

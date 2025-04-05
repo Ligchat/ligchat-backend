@@ -10,6 +10,9 @@ using System.Linq;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using LigChat.Backend.Domain.Entities;
+using LigChat.Data.Repositories;
+using tests_.src.Domain.Entities.LigChat.Backend.Domain.Entities;
+using LigChat.Data.Interfaces.IRepositories;
 
 namespace LigChat.Com.Api.Mvc.UserMvc.Service
 {
@@ -17,23 +20,29 @@ namespace LigChat.Com.Api.Mvc.UserMvc.Service
     {
         private readonly IUserRepositoryInterface _userRepository;
         private readonly IAmazonS3 _s3Client;
+        private readonly IUserSectorRepositoryInterface _userSector;
         private readonly IConfiguration _configuration;
         private readonly string _bucketName;
+        private readonly ISectorRepositoryInterface _sectorRepository;
 
         public UserService(
             IUserRepositoryInterface userRepository,
-            IConfiguration configuration)
+            IConfiguration configuration,
+            IUserSectorRepositoryInterface userSector,
+            ISectorRepositoryInterface sectorRepository
+            )
+            
         {
             _userRepository = userRepository;
             _configuration = configuration;
+            _userSector = userSector;
+            _sectorRepository = sectorRepository;
 
-            // Lê o nome do bucket e as credenciais diretamente do appsettings.json
             var awsAccessKey = _configuration["AWS:AccessKey"];
             var awsSecretKey = _configuration["AWS:SecretKey"];
             var region = _configuration["AWS:Region"];
             _bucketName = _configuration["AWS:BucketName"] ?? throw new ArgumentNullException("Bucket name not found in configuration");
 
-            // Configura o cliente S3 com as credenciais
             var s3Config = new AmazonS3Config { RegionEndpoint = Amazon.RegionEndpoint.GetBySystemName(region) };
             _s3Client = new AmazonS3Client(awsAccessKey, awsSecretKey, s3Config);
         }
@@ -59,18 +68,53 @@ namespace LigChat.Com.Api.Mvc.UserMvc.Service
             return new SingleUserResponse("User deleted successfully", "200", responseDto);
         }
 
-        public UserListResponse GetAll()
+        public UserListResponse GetAll(int? invitedBy = null)
         {
-            var users = _userRepository.GetAll();
-            var userDtos = users.Select(user => new UserViewModel(
-                user.Id,
-                user.Name,
-                user.Email,
-                user.PhoneWhatsapp,
-                user.AvatarUrl,
-                user.IsAdmin,
-                user.Status
-            )).ToList(); // Corrigido para garantir que a lista é retornada corretamente
+            IEnumerable<User> users;
+
+            if (invitedBy.HasValue)
+            {
+                users = _userRepository.GetAll().Where(user => user.InvitedBy == invitedBy.Value);
+
+                var invitedUser = _userRepository.GetAll().FirstOrDefault(user => user.Id == invitedBy.Value);
+                if (invitedUser != null)
+                {
+                    users = users.Append(invitedUser);
+                }
+            }
+            else
+            {
+                users = _userRepository.GetAll();
+            }
+
+            var userDtos = users.Select(user =>
+            {
+                var userSectors = _userSector.GetAllByUserId(user.Id);
+                var sectorIds = userSectors.Select(us => us.SectorId).ToList();
+
+                var userViewModel = new UserViewModel(
+                    user.Id,
+                    user.Name,
+                    user.Email,
+                    user.PhoneWhatsapp,
+                    user.AvatarUrl,
+                    user.IsAdmin,
+                    user.Status,
+                    user.InvitedBy
+                );
+
+                // Adiciona informações dos setores
+                foreach (var userSector in userSectors)
+                {
+                    var sector = _sectorRepository.GetById(userSector.SectorId);
+                    if (sector != null)
+                    {
+                        userViewModel.Sectors.Add(new SectorInfo(sector.Id, sector.Name));
+                    }
+                }
+
+                return userViewModel;
+            }).ToList();
 
             return new UserListResponse("Success", "200", userDtos);
         }
@@ -112,23 +156,18 @@ namespace LigChat.Com.Api.Mvc.UserMvc.Service
                 user.AvatarUrl,
                 user.IsAdmin,
                 user.Status
-
             );
 
             return new SingleUserResponse("Success", "200", userDto);
         }
 
-        public SingleUserResponse? Save(CreateUserRequestDTO userDto)
+        public SingleUserResponse Save(CreateUserRequestDTO userDto)
         {
-            // Valida os dados do usuário
-            if (string.IsNullOrWhiteSpace(userDto.Name) ||
-                string.IsNullOrWhiteSpace(userDto.Email))
+            if (string.IsNullOrWhiteSpace(userDto.Name) || string.IsNullOrWhiteSpace(userDto.Email))
             {
                 return new SingleUserResponse("Invalid request", "400", null);
             }
 
-
-            // Cria um novo usuário a partir do DTO
             var user = new User
             {
                 Name = userDto.Name,
@@ -136,10 +175,10 @@ namespace LigChat.Com.Api.Mvc.UserMvc.Service
                 PhoneWhatsapp = userDto.PhoneWhatsapp,
                 AvatarUrl = userDto.AvatarUrl,
                 IsAdmin = userDto.IsAdmin,
-                Status = userDto.Status
+                Status = userDto.Status,
+                InvitedBy = userDto.InvitedBy // Atribui o ID do convidador
             };
 
-            // Adiciona o usuário ao banco de dados para obter o ID
             var savedUser = _userRepository.Add(user);
 
             var responseDto = new UserViewModel(
@@ -157,9 +196,7 @@ namespace LigChat.Com.Api.Mvc.UserMvc.Service
 
         public SingleUserResponse Update(int id, UpdateUserRequestDTO userDto)
         {
-            // Valida os dados do usuário
-            if (string.IsNullOrWhiteSpace(userDto.Name) ||
-                string.IsNullOrWhiteSpace(userDto.Email))
+            if (string.IsNullOrWhiteSpace(userDto.Name) || string.IsNullOrWhiteSpace(userDto.Email))
             {
                 return new SingleUserResponse("Invalid request", "400", null);
             }
@@ -170,16 +207,55 @@ namespace LigChat.Com.Api.Mvc.UserMvc.Service
                 return new SingleUserResponse("User not found", "404", null);
             }
 
-            // Atualiza os dados do usuário
             existingUser.Name = userDto.Name;
             existingUser.Email = userDto.Email;
             existingUser.PhoneWhatsapp = userDto.PhoneWhatsapp;
-            existingUser.AvatarUrl = userDto.AvatarUrl;
             existingUser.IsAdmin = userDto.IsAdmin;
             existingUser.Status = userDto.Status;
 
-            // Atualiza o usuário no banco de dados
+            // Verifica se uma imagem foi enviada
+            if (!string.IsNullOrWhiteSpace(userDto.AvatarUrl) && IsBase64String(userDto.AvatarUrl))
+            {
+                existingUser.AvatarUrl = SaveImageToS3(existingUser.Id, userDto.AvatarUrl);
+            }
+            else
+            {
+                existingUser.AvatarUrl = userDto.AvatarUrl; // Mantém a URL existente se não houver nova imagem
+            }
+
             var savedUser = _userRepository.Update(existingUser);
+
+            // Atualiza os setores do usuário
+            if (userDto.Sectors != null)
+            {
+                // Remove todos os setores atuais do usuário
+                _userSector.DeleteAllByUserId(savedUser.Id);
+
+                // Adiciona os novos setores
+                foreach (var sector in userDto.Sectors)
+                {
+                    var userSector = new UserSector
+                    {
+                        UserId = savedUser.Id,
+                        SectorId = sector.Id,
+                        IsShared = true
+                    };
+                    _userSector.Save(userSector);
+                }
+            }
+
+            // Busca os setores atualizados para retornar na resposta
+            var userSectors = _userSector.GetAllByUserId(savedUser.Id);
+            var sectorInfoList = new List<SectorInfo>();
+
+            foreach (var userSector in userSectors)
+            {
+                var sector = _sectorRepository.GetById(userSector.SectorId);
+                if (sector != null)
+                {
+                    sectorInfoList.Add(new SectorInfo(sector.Id, sector.Name));
+                }
+            }
 
             var responseDto = new UserViewModel(
                 savedUser.Id,
@@ -188,13 +264,13 @@ namespace LigChat.Com.Api.Mvc.UserMvc.Service
                 savedUser.PhoneWhatsapp,
                 savedUser.AvatarUrl,
                 savedUser.IsAdmin,
-                savedUser.Status
+                savedUser.Status,
+                savedUser.InvitedBy
             );
+            responseDto.Sectors = sectorInfoList;
 
             return new SingleUserResponse("User updated successfully", "200", responseDto);
         }
-
-        // Métodos auxiliares...
 
         private bool IsBase64String(string base64String)
         {
@@ -208,9 +284,8 @@ namespace LigChat.Com.Api.Mvc.UserMvc.Service
             var user = _userRepository.GetById(userId);
             if (user == null) throw new Exception("User not found.");
 
-            // Salva o código de verificação com expiração
             user.VerificationCode = verificationCode;
-            user.VerificationCodeExpiresAt = DateTime.UtcNow.AddMinutes(5); // Expira em 5 minutos
+            user.VerificationCodeExpiresAt = DateTime.UtcNow.AddMinutes(5);
 
             _userRepository.Update(user);
         }
@@ -220,21 +295,19 @@ namespace LigChat.Com.Api.Mvc.UserMvc.Service
             var user = _userRepository.GetByEmail(email);
             if (user == null || user.VerificationCodeExpiresAt < DateTime.UtcNow)
             {
-                return false; // Usuário não encontrado ou código expirado
+                return false;
             }
 
-            return user.VerificationCode == code; // Retorna true se o código é válido
+            return user.VerificationCode == code;
         }
 
         private string SaveImageToS3(int userId, string base64Image)
         {
             try
             {
-                // Remove o prefixo 'data:image/png;base64,' da string
                 var base64Data = base64Image.Substring(base64Image.IndexOf(",") + 1);
                 var imageData = Convert.FromBase64String(base64Data);
 
-                // Cria um nome de arquivo único baseado no ID do usuário
                 var fileName = $"avatars/{userId}.png";
 
                 using (var stream = new MemoryStream(imageData))
@@ -250,7 +323,6 @@ namespace LigChat.Com.Api.Mvc.UserMvc.Service
                     transferUtility.Upload(uploadRequest);
                 }
 
-                // Retorna a URL pública da imagem no S3
                 return $"https://{_bucketName}.s3.amazonaws.com/{fileName}";
             }
             catch (Exception ex)

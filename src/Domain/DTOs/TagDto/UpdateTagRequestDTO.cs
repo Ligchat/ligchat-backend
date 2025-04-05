@@ -28,23 +28,31 @@ namespace LigChat.Backend.Domain.DTOs.TagDto
         public bool Status { get; set; }
 
         /// <summary>
+        /// Cor da etiqueta. Este campo é opcional.
+        /// </summary>
+        public string? Color { get; set; }
+
+        /// <summary>
         /// Construtor para inicializar o DTO com valores específicos.
         /// </summary>
         /// <param name="name">Nome da etiqueta.</param>
         /// <param name="description">Descrição da etiqueta.</param>
         /// <param name="sectorId">Identificador do setor associado à etiqueta.</param>
         /// <param name="status">Status da etiqueta.</param>
+        /// <param name="color">Cor da etiqueta.</param>
         [JsonConstructor]
         public UpdateTagRequestDTO(
             string? name = null,
             string? description = null,
             int? sectorId = null,
-            bool status = false) // Adicionado o novo parâmetro com valor padrão
+            string? color = null,
+            bool status = false)
         {
             Name = name;
             Description = description;
             SectorId = sectorId;
-            Status = status; // Inicializando o novo campo
+            Color = color;
+            Status = status;
         }
     }
 }

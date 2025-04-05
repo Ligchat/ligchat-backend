@@ -1,9 +1,10 @@
-﻿using System.ComponentModel.DataAnnotations.Schema;
+﻿using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace tests_.src.Domain.Entities
 {
-    [Table("colunas")]
+    [Table("colunas", Schema = "ligchat")]
     public class Coluna
     {
         [Key]
@@ -11,11 +12,18 @@ namespace tests_.src.Domain.Entities
         public int Id { get; set; }
 
         [Column("name")]
-        public string Name { get; set; }
+        [Required]
+        public string Name { get; set; } = string.Empty;
 
         [Column("sector_id")]
+        [Required]
         public int SectorId { get; set; }
 
-        public ICollection<Card> Cards { get; set; } = new List<Card>();
+        [Column("position")]
+        [Required]
+        public int Position { get; set; }
+
+        [InverseProperty("Column")]
+        public virtual ICollection<Card> Cards { get; set; } = new List<Card>();
     }
 }

@@ -58,5 +58,24 @@ namespace tests_.src.Web.Controller
             _colunaService.Delete(id);
             return NoContent();
         }
+
+        [HttpPut("{id}/move")]
+        public IActionResult MoveColuna(int id, [FromBody] MoveColunaRequest request)
+        {
+            var coluna = _colunaService.GetById(id);
+            if (coluna == null)
+            {
+                return NotFound();
+            }
+
+            _colunaService.MoveColuna(id, request.NewPosition);
+            return NoContent();
+        }
+
+
+        public class MoveColunaRequest
+        {
+            public int NewPosition { get; set; }
+        }
     }
 }

@@ -17,65 +17,43 @@
             _context = context;
         }
 
-        // Método ajustado para buscar colunas junto com os cards e contatos associados
         public IEnumerable<Coluna> GetAll(int sectorId)
         {
-            return _context.Colunas
-                .Where(c => c.SectorId == sectorId)
-                .Select(c => new Coluna
-                {
-                    Id = c.Id,
-                    Name = c.Name,
-                    SectorId = c.SectorId,
-                    Cards = _context.Cards
-                        .Where(card => card.ColumnId == c.Id)
-                        .Select(card => new Card
-                        {
-                            Id = card.Id,
-                            ContactId = card.ContactId,
-                            ColumnId = card.ColumnId,
-                            LastContact = card.LastContact,
-                            Contato = _context.Contatos
-                                .Where(contact => contact.Id == card.ContactId)
-                                .Select(contact => new Contato
-                                {
-                                    Id = contact.Id,
-                                    Name = contact.Name,
-                                    Phone = contact.Phone
-                                }).FirstOrDefault() // Obtém o primeiro contato associado ao card
-                        }).ToList() // Converte a lista de cards
-                })
-                .ToList(); // Converte a lista de colunas
+            try
+            {
+                Console.WriteLine($"Buscando colunas para o setor {sectorId}");
+                var result = _context.Set<Coluna>()
+                    .Where(c => c.SectorId == sectorId)
+                    .OrderBy(c => c.Position)
+                    .AsNoTracking()
+                    .Select(c => new Coluna 
+                    {
+                        Id = c.Id,
+                        Name = c.Name,
+                        SectorId = c.SectorId,
+                        Position = c.Position
+                    })
+                    .ToList();
+
+                Console.WriteLine($"Encontradas {result.Count} colunas");
+                return result;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Erro ao buscar colunas: {ex.Message}");
+                Console.WriteLine($"StackTrace: {ex.StackTrace}");
+                throw;
+            }
         }
 
         public Coluna GetById(int id)
         {
-            return _context.Colunas
+            return _context.Set<Coluna>()
                 .Where(c => c.Id == id)
-                .Select(c => new Coluna
-                {
-                    Id = c.Id,
-                    Name = c.Name,
-                    SectorId = c.SectorId,
-                    Cards = _context.Cards
-                        .Where(card => card.ColumnId == c.Id)
-                        .Select(card => new Card
-                        {
-                            Id = card.Id,
-                            ContactId = card.ContactId,
-                            ColumnId = card.ColumnId,
-                            LastContact = card.LastContact,
-                            Contato = _context.Contatos
-                                .Where(contact => contact.Id == card.ContactId)
-                                .Select(contact => new Contato
-                                {
-                                    Id = contact.Id,
-                                    Name = contact.Name,
-                                    Phone = contact.Phone
-                                }).FirstOrDefault() // Obtém o primeiro contato associado ao card
-                        }).ToList() // Converte a lista de cards
-                })
-                .FirstOrDefault(); // Retorna a primeira coluna encontrada
+                .Include(c => c.Cards)
+                    .ThenInclude(card => card.Contact)
+                .AsNoTracking()
+                .FirstOrDefault();
         }
 
         public Coluna Create(Coluna coluna)
@@ -97,6 +75,28 @@
             if (coluna != null)
             {
                 _context.Colunas.Remove(coluna);
+                _context.SaveChanges();
+            }
+        }
+
+        public void MoveColuna(int colunaId, int newPosition)
+        {
+            var coluna = _context.Colunas.Find(colunaId);
+            if (coluna != null)
+            {
+                var colunas = _context.Colunas
+                    .Where(c => c.SectorId == coluna.SectorId && c.Id != colunaId)
+                    .OrderBy(c => c.Position)
+                    .ToList();
+
+                coluna.Position = newPosition;
+                colunas.Insert(newPosition - 1, coluna);
+
+                for (int i = 0; i < colunas.Count; i++)
+                {
+                    colunas[i].Position = i + 1;
+                }
+
                 _context.SaveChanges();
             }
         }

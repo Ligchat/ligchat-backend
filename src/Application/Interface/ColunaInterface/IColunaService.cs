@@ -10,6 +10,7 @@
         Coluna Create(Coluna coluna);
         void Update(Coluna coluna);
         void Delete(int id);
-    }
 
+        void MoveColuna(int id, int newPosition);
+    }
 }

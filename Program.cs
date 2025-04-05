@@ -18,7 +18,6 @@ using LigChat.Api.Services.SectorService;
 using LigChat.Api.Services.TeamService;
 using LigChat.Api.Services.FlowService;
 using LigChat.Backend.Application.Interface.ContactInterface;
-using LigChat.Com.Api.Mvc.ContactMvc.Service;
 using LigChat.Backend.Application.Interface.WebhookInterface;
 using LigChat.Backend.Application.Interface.WebhookEventInterface;
 using LigChat.Com.Api.Mvc.WebhookMvc.Service;
@@ -33,13 +32,34 @@ using tests_.src.Application.Repositories;
 using tests_.src.Application.Interface.CardInterface;
 using tests_.src.Application.Interface.ColunaInterface;
 using tests_.src.Application.Interface.ContatoInterface;
-using tests_.src.Application.Services.tests_.src.Application.Services;
 using tests_.src.Application.Common.Utilities;
 using tests_.src.Application.Interface.Message.Ligchat.Application.Interfaces;
 using Ligchat.Application.Services;
 using tests_.src.Domain.Services;
+using tests_.src.Application.Services.tests_.src.Application.Services;
+using LigChat.Data.Interfaces.IRepositories;
+using LigChat.Data.Repositories;
+using LigChat.Api.Services;
+using LigChat.Backend.Application.Services;
 
 var builder = WebApplication.CreateBuilder(args);
+
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AllowAll",
+        builder =>
+        {
+            builder
+                .AllowAnyOrigin()
+                .AllowAnyMethod()
+                .AllowAnyHeader();
+        });
+});
+
+builder.Configuration
+    .SetBasePath(Directory.GetCurrentDirectory())
+    .AddJsonFile("appsettings.json", optional: true, reloadOnChange: true)
+    .AddEnvironmentVariables();
 
 var jwtSettings = builder.Configuration.GetSection("Jwt");
 var key = Encoding.ASCII.GetBytes(jwtSettings["Key"]);
@@ -48,9 +68,6 @@ var key = Encoding.ASCII.GetBytes(jwtSettings["Key"]);
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
-
-// Configuração de CORS
-builder.Services.AddCorsPolicy();
 
 // Adicionar suporte para controllers
 builder.Services.AddControllers();
@@ -92,6 +109,7 @@ builder.Services.AddSingleton(new MongoDbContext(mongoConnectionString, mongoDat
 // Injeção de dependências de repositórios
 builder.Services.AddTransient<IContactRepositoryInterface, ContactRepository>();
 builder.Services.AddTransient<IUserRepositoryInterface, UserRepository>();
+builder.Services.AddTransient<IAgentRepository, AgentRepository>();
 builder.Services.AddTransient<IFolderRepositoryInterface, FolderRepository>();
 builder.Services.AddTransient<IFlowRepositoryInterface, FlowRepository>();
 builder.Services.AddTransient<ITagRepositoryInterface, TagRepository>();
@@ -101,10 +119,18 @@ builder.Services.AddTransient<ITeamRepositoryInterface, TeamRepository>();
 builder.Services.AddTransient<IWebhookRepositoryInterface, WebhookRepository>();
 builder.Services.AddTransient<IWebhookEventRepositoryInterface, WebhookEventRepository>();
 builder.Services.AddAWSService<IAmazonS3>();
+builder.Services.AddTransient<IUserSectorRepositoryInterface, UserSectorRepository>();
+
 
 // Adicione o registro dos serviços
-builder.Services.AddTransient<IContactServiceInterface, ContactService>();
+builder.Services.AddScoped<IContactServiceInterface>(provider => 
+    new ContactService(
+        provider.GetRequiredService<IContactRepositoryInterface>(),
+        provider.GetRequiredService<DatabaseConfiguration>()
+    )
+);
 builder.Services.AddTransient<IUserServiceInterface, UserService>();
+builder.Services.AddScoped<AgentService>();
 builder.Services.AddTransient<ITagServiceInterface, TagService>();
 builder.Services.AddTransient<IFolderServiceInterface, FolderService>();
 builder.Services.AddTransient<IMessageSchedulingServiceInterface, MessageSchedulingService>();
@@ -117,9 +143,7 @@ builder.Services.AddScoped<IPermissionService, PermissionService>();
 builder.Services.AddScoped<IUserPermissionService, UserPermissionService>();
 builder.Services.AddScoped<IPermissionRepository, PermissionRepository>();
 builder.Services.AddScoped<IUserPermissionRepository, UserPermissionRepository>();
-builder.Services.AddScoped<WhatsAppIntegrationService>();
 builder.Services.AddScoped<IColunaService, ColunaService>();
-builder.Services.AddScoped<IContatoService, ContatoService>();
 builder.Services.AddScoped<IMessageService, MessageService>();
 builder.Services.AddScoped<ICardService, CardService>();
 builder.Services.AddScoped<BusinessDayService>();
@@ -130,12 +154,10 @@ builder.Services.AddHttpClient();
 
 var app = builder.Build();
 
-// Configure the HTTP request pipeline.
-if (app.Environment.IsDevelopment())
-{
-    app.UseSwagger();
+app.UseCors("AllowAll");
+
+app.UseSwagger();
     app.UseSwaggerUI();
-}
 
 app.UseHttpsRedirection();
 app.UseAuthentication();

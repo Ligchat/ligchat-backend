@@ -2,7 +2,6 @@
 {
     using MongoDB.Bson;
     using MongoDB.Bson.Serialization.Attributes;
-    using System;
     using System.Collections.Generic;
 
     public class FlowWhatsapp
@@ -44,14 +43,28 @@
         [BsonElement("blocks")]
         public List<BlockDTO>? Blocks { get; set; }
 
+        // Alterado para aceitar um único objeto em vez de uma lista
         [BsonElement("menuOptions")]
-        public List<MenuOptionDTO>? MenuOptions { get; set; }
+        public MenuOptionDTO? MenuOptions { get; set; }
 
         [BsonElement("selectedTag")]
         public TagDTO? SelectedTag { get; set; }
 
         [BsonElement("condition")]
         public ConditionDTO? Condition { get; set; }
+
+        // Adicionando o campo Position
+        [BsonElement("position")]
+        public PositionDTO? Position { get; set; }
+    }
+
+    public class PositionDTO
+    {
+        [BsonElement("x")]
+        public double? X { get; set; }
+
+        [BsonElement("y")]
+        public double? Y { get; set; }
     }
 
     public class BlockDTO

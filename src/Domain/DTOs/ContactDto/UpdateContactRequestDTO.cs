@@ -1,4 +1,5 @@
 using System.Text.Json.Serialization;
+using System.ComponentModel.DataAnnotations;
 
 namespace LigChat.Backend.Domain.DTOs.ContactDto
 {
@@ -11,24 +12,26 @@ namespace LigChat.Backend.Domain.DTOs.ContactDto
         /// Nome do contato.
         /// Representa o nome completo ou o nome pelo qual o usuário é conhecido.
         /// </summary>
-        public string? Name { get; set; }
+        [Required]
+        public string Name { get; set; }
 
         /// <summary>
         /// Identificador da etiqueta associada ao contato.
         /// Referencia a tag que categoriza o contato.
         /// </summary>
-        public int TagId { get; set; }
+        public int? TagId { get; set; }
 
         /// <summary>
         /// Número de WhatsApp do contato.
         /// Usado para contato via WhatsApp. Pode conter apenas números e alguns caracteres especiais.
         /// </summary>
-        public string? PhoneWhatsapp { get; set; }
+        [Required]
+        public string PhoneWhatsapp { get; set; }
 
         /// <summary>
         /// URL da foto de perfil do WhatsApp.
         /// </summary>
-        public string? ProfilePicUrl { get; set; }
+        public string? AvatarUrl { get; set; }
 
         /// <summary>
         /// E-mail do contato.
@@ -51,7 +54,23 @@ namespace LigChat.Backend.Domain.DTOs.ContactDto
         /// Status do contato.
         /// Indica se o contato está ativo ou não.
         /// </summary>
-        public bool Status { get; set; }
+        [Required]
+        public bool IsActive { get; set; } = true;
+
+        /// <summary>
+        /// Prioridade do contato.
+        /// </summary>
+        public string? Priority { get; set; } = "normal";
+
+        /// <summary>
+        /// Ativo artificial do contato.
+        /// </summary>
+        public int AiActive { get; set; } = 1;
+
+        /// <summary>
+        /// Identificador do usuário atribuído ao contato.
+        /// </summary>
+        public int? AssignedTo { get; set; }
 
         /// <summary>
         /// Construtor para inicialização da classe <see cref="UpdateContactRequestDTO"/>.
@@ -59,30 +78,39 @@ namespace LigChat.Backend.Domain.DTOs.ContactDto
         /// <param name="name">Nome do contato.</param>
         /// <param name="tagId">Identificador da etiqueta associada ao contato.</param>
         /// <param name="phoneWhatsapp">Número de WhatsApp do contato.</param>
-        /// <param name="profilePicUrl">URL da foto de perfil do WhatsApp.</param>
+        /// <param name="avatarUrl">URL da foto de perfil do WhatsApp.</param>
         /// <param name="email">E-mail do contato.</param>
         /// <param name="notes">Notas adicionais sobre o contato.</param>
         /// <param name="sectorId">Identificador do setor associado ao contato.</param>
-        /// <param name="status">Status do contato.</param>
+        /// <param name="isActive">Status do contato.</param>
+        /// <param name="priority">Prioridade do contato.</param>
+        /// <param name="aiActive">Ativo artificial do contato.</param>
+        /// <param name="assignedTo">Identificador do usuário atribuído ao contato.</param>
         [JsonConstructor]
         public UpdateContactRequestDTO(
-            string? name,
-            int tagId,
-            string? phoneWhatsapp,
-            string? profilePicUrl = null,
+            string name,
+            int? tagId,
+            string phoneWhatsapp,
+            string? avatarUrl = null,
             string? email = null,
             string? notes = null,
             int? sectorId = null,
-            bool status = false)
+            bool isActive = true,
+            string? priority = "normal",
+            int aiActive = 1,
+            int? assignedTo = null)
         {
             Name = name;
             TagId = tagId;
             PhoneWhatsapp = phoneWhatsapp;
-            ProfilePicUrl = profilePicUrl;
+            AvatarUrl = avatarUrl;
             Email = email;
             Notes = notes;
             SectorId = sectorId;
-            Status = status; // Inicializa o status
+            IsActive = isActive;
+            Priority = priority;
+            AiActive = aiActive;
+            AssignedTo = assignedTo;
         }
     }
 }

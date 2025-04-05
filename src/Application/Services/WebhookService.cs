@@ -3,6 +3,8 @@ using LigChat.Backend.Application.Interface.WebhookInterface;
 using LigChat.Backend.Data.Interfaces.IRepositories;
 using LigChat.Backend.Domain.DTOs.WebhookDto;
 using LigChat.Backend.Domain.Entities;
+using System;
+using System.Linq;
 
 namespace LigChat.Com.Api.Mvc.WebhookMvc.Service
 {
@@ -19,17 +21,17 @@ namespace LigChat.Com.Api.Mvc.WebhookMvc.Service
         /// <summary>
         /// Obtém todos os webhooks e retorna uma resposta com uma lista de webhooks.
         /// </summary>
-        public WebhookListResponse GetAll()
+        public WebhookListResponse GetAll(int sectorId) 
         {
-            var webhooks = _webhookRepository.GetAll();
+            var webhooks = _webhookRepository.GetAll(sectorId);
             var webhookDtos = webhooks.Select(w => new WebhookViewModel(
                 w.Id,
                 w.Name,
-                w.TokenKey,
-                w.Url,
-                w.Status,
+                string.Empty, // TokenKey
+                w.CallbackUrl,
+                true, // Status - assumindo ativo por padrão
                 w.SectorId
-            )).ToList(); // Convert to List for better performance in case of large datasets
+            )).ToList();
 
             return new WebhookListResponse("Success", "200", webhookDtos);
         }
@@ -48,9 +50,9 @@ namespace LigChat.Com.Api.Mvc.WebhookMvc.Service
             var webhookDto = new WebhookViewModel(
                 webhook.Id,
                 webhook.Name,
-                webhook.TokenKey,
-                webhook.Url,
-                webhook.Status,
+                string.Empty, // TokenKey
+                webhook.CallbackUrl,
+                true, // Status - assumindo ativo por padrão
                 webhook.SectorId
             );
 
@@ -63,7 +65,7 @@ namespace LigChat.Com.Api.Mvc.WebhookMvc.Service
         public SingleWebhookResponse Save(CreateWebhookRequestDTO webhookDto)
         {
             // Valida os dados do webhook
-            if (string.IsNullOrWhiteSpace(webhookDto.Name) || string.IsNullOrWhiteSpace(webhookDto.TokenKey) || string.IsNullOrWhiteSpace(webhookDto.Url))
+            if (string.IsNullOrWhiteSpace(webhookDto.Name) || string.IsNullOrWhiteSpace(webhookDto.CallbackUrl))
             {
                 return new SingleWebhookResponse("Invalid request", "400", null);
             }
@@ -72,9 +74,7 @@ namespace LigChat.Com.Api.Mvc.WebhookMvc.Service
             var webhook = new Webhook
             {
                 Name = webhookDto.Name,
-                TokenKey = webhookDto.TokenKey,
-                Url = webhookDto.Url,
-                Status = webhookDto.Status,
+                CallbackUrl = webhookDto.CallbackUrl,
                 SectorId = webhookDto.SectorId,
                 CreatedAt = DateTime.UtcNow,
                 UpdatedAt = DateTime.UtcNow
@@ -87,9 +87,9 @@ namespace LigChat.Com.Api.Mvc.WebhookMvc.Service
             var responseDto = new WebhookViewModel(
                 savedWebhook.Id,
                 savedWebhook.Name,
-                savedWebhook.TokenKey,
-                savedWebhook.Url,
-                savedWebhook.Status,
+                string.Empty, // TokenKey
+                savedWebhook.CallbackUrl,
+                true, // Status - assumindo ativo por padrão
                 savedWebhook.SectorId
             );
 
@@ -102,7 +102,7 @@ namespace LigChat.Com.Api.Mvc.WebhookMvc.Service
         public SingleWebhookResponse Update(int id, UpdateWebhookRequestDTO webhookDto)
         {
             // Valida os dados do webhook
-            if (string.IsNullOrWhiteSpace(webhookDto.Name) || string.IsNullOrWhiteSpace(webhookDto.TokenKey) || string.IsNullOrWhiteSpace(webhookDto.Url))
+            if (string.IsNullOrWhiteSpace(webhookDto.Name) || string.IsNullOrWhiteSpace(webhookDto.CallbackUrl))
             {
                 return new SingleWebhookResponse("Invalid request", "400", null);
             }
@@ -116,9 +116,7 @@ namespace LigChat.Com.Api.Mvc.WebhookMvc.Service
 
             // Atualiza o webhook com os dados do DTO
             existingWebhook.Name = webhookDto.Name;
-            existingWebhook.TokenKey = webhookDto.TokenKey;
-            existingWebhook.Url = webhookDto.Url;
-            existingWebhook.Status = webhookDto.Status;
+            existingWebhook.CallbackUrl = webhookDto.CallbackUrl;
             existingWebhook.SectorId = webhookDto.SectorId;
             existingWebhook.UpdatedAt = DateTime.UtcNow;
 
@@ -129,9 +127,9 @@ namespace LigChat.Com.Api.Mvc.WebhookMvc.Service
             var responseDto = new WebhookViewModel(
                 savedWebhook.Id,
                 savedWebhook.Name,
-                savedWebhook.TokenKey,
-                savedWebhook.Url,
-                savedWebhook.Status,
+                string.Empty, // TokenKey
+                savedWebhook.CallbackUrl,
+                true, // Status - assumindo ativo por padrão
                 savedWebhook.SectorId
             );
 
@@ -154,9 +152,9 @@ namespace LigChat.Com.Api.Mvc.WebhookMvc.Service
             var responseDto = new WebhookViewModel(
                 deletedWebhook.Id,
                 deletedWebhook.Name,
-                deletedWebhook.TokenKey,
-                deletedWebhook.Url,
-                deletedWebhook.Status,
+                string.Empty, // TokenKey
+                deletedWebhook.CallbackUrl,
+                true, // Status - assumindo ativo por padrão
                 deletedWebhook.SectorId
             );
 

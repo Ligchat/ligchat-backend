@@ -52,6 +52,10 @@ namespace LigChat.Backend.Domain.Entities
         [Column("verification_code_expires_at")]
         public DateTime? VerificationCodeExpiresAt { get; set; }
 
+        // Nova propriedade para armazenar o ID do usuário que convidou
+        [Column("invited_by")]
+        public int? InvitedBy { get; set; } // Pode ser nulo se não houver um convidador
+
         // Relationship with UserPermission
         public ICollection<UserPermission> UserPermissions { get; set; }
 
@@ -59,7 +63,7 @@ namespace LigChat.Backend.Domain.Entities
         {
         }
 
-        public User(string name, string email, string phoneWhatsapp, int? sectorId = null, bool status = true, bool isAdmin = false, string? avatarUrl = null)
+        public User(string name, string email, string phoneWhatsapp, int? sectorId = null, bool status = true, bool isAdmin = false, string? avatarUrl = null, int? invitedBy = null)
         {
             if (string.IsNullOrWhiteSpace(name))
                 throw new ArgumentNullException(nameof(name), "O nome não pode ser nulo ou vazio.");
@@ -78,6 +82,7 @@ namespace LigChat.Backend.Domain.Entities
             IsAdmin = isAdmin; // Define se o usuário é admin
             AvatarUrl = avatarUrl;
             CreatedAt = UpdatedAt = DateTime.UtcNow;
+            InvitedBy = invitedBy; // Inicializa a propriedade de convidador
         }
     }
 }

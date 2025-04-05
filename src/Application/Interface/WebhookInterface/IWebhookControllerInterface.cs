@@ -6,7 +6,7 @@ namespace LigChat.Backend.Application.Interface.WebhookInterface
     public interface IWebhookControllerInterface
     {
         // Retorna todos os webhooks. Deve retornar um IActionResult que pode incluir um status code e os dados dos webhooks.
-        IActionResult GetAll();
+        IActionResult GetAll(int sectorId);
 
         // Retorna um webhook específico baseado no ID. Deve retornar um IActionResult com o status e os dados do webhook.
         IActionResult GetById(int id);

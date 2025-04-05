@@ -1,14 +1,7 @@
 ﻿using LigChat.Backend.Domain.Entities;
-using LigChat.Backend.Domain.Entities;
-using LigChat.Backend.Domain.Entities;
-using LigChat.Backend.Domain.Entities;
-using LigChat.Backend.Domain.Entities;
-using LigChat.Backend.Domain.Entities;
-
-
 using Microsoft.EntityFrameworkCore;
-using LigChat.Backend.Domain.Entities;
 using tests_.src.Domain.Entities;
+using tests_.src.Domain.Entities.LigChat.Backend.Domain.Entities;
 
 namespace LigChat.Backend.Web.Extensions.Database
 {
@@ -29,6 +22,8 @@ namespace LigChat.Backend.Web.Extensions.Database
 
         public DbSet<Variables> Variables { get; set; }
 
+        public DbSet<Agent> Agents { get; set; }
+
         public DbSet<Messeageging> Messeageging { get; set; }
 
         public DbSet<BusinessHours> BusinessHours { get; set; }
@@ -36,7 +31,6 @@ namespace LigChat.Backend.Web.Extensions.Database
         public DbSet<Contact> Contacts { get; set; }
 
         public DbSet<Coluna> Colunas { get; set; }
-        public DbSet<Contato> Contatos { get; set; }
         public DbSet<Card> Cards { get; set; }
 
         public DbSet<Permission> Permissions { get; set; }
@@ -53,6 +47,8 @@ namespace LigChat.Backend.Web.Extensions.Database
 
         public DbSet<Folder> Folders { get; set; }
 
+        public DbSet<UserSector> UserSectors { get; set; }
+
         public DbSet<MessageScheduling> MessageSchedulings { get; set; }
 
         public DbSet<Sector> Sectors { get; set; }
@@ -63,6 +59,36 @@ namespace LigChat.Backend.Web.Extensions.Database
 
         public DbSet<WebhookEvent> WebhookEvents { get; set; }
 
+        protected override void OnModelCreating(ModelBuilder modelBuilder)
+        {
+            base.OnModelCreating(modelBuilder);
+
+            modelBuilder.Entity<Agent>()
+                .HasIndex(a => new { a.SectorId, a.Status })
+                .IsUnique()
+                .HasFilter("status = true");
+
+            // Configurando relacionamento Contact-Card
+            modelBuilder.Entity<Contact>()
+                .HasMany<Card>()
+                .WithOne(c => c.Contact)
+                .HasForeignKey(c => c.ContactId)
+                .IsRequired(false);  // Tornando a relação opcional
+
+            // Configurando relacionamento Card-Coluna
+            modelBuilder.Entity<Card>()
+                .HasOne(c => c.Column)
+                .WithMany(col => col.Cards)
+                .HasForeignKey(c => c.ColumnId)
+                .IsRequired(false);  // Tornando a relação opcional
+
+            // Desabilitando carregamento automático de relacionamentos
+            foreach (var relationship in modelBuilder.Model.GetEntityTypes()
+                .SelectMany(e => e.GetForeignKeys()))
+            {
+                relationship.DeleteBehavior = DeleteBehavior.NoAction;
+            }
+        }
     }
 }
 

@@ -5,7 +5,7 @@ namespace LigChat.Backend.Data.Interfaces.IRepositories
     public interface IWebhookRepositoryInterface
     {
         // Obtém todos os webhooks. Retorna uma coleção de webhooks.
-        IEnumerable<Webhook> GetAll();
+        IEnumerable<Webhook> GetAll(int sectorId);
 
         // Obtém um webhook pelo ID. Retorna um webhook ou null se não encontrado.
         Webhook? GetById(int id);

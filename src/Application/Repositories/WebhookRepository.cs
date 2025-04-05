@@ -37,6 +37,7 @@ namespace LigChat.Backend.Application.Repositories
         /// <summary>
         /// Atualiza um webhook existente no banco de dados.
         /// </summary>
+        /// <param name="id">O ID do webhook a ser atualizado.</param>
         /// <param name="webhook">O webhook com as atualizações.</param>
         /// <returns>O webhook atualizado.</returns>
         public Webhook Update(int id, Webhook webhook)
@@ -49,9 +50,7 @@ namespace LigChat.Backend.Application.Repositories
             {
                 // Atualiza as propriedades do webhook existente
                 existingWebhook.Name = webhook.Name;
-                existingWebhook.TokenKey = webhook.TokenKey;
-                existingWebhook.Url = webhook.Url;
-                existingWebhook.Status = webhook.Status;
+                existingWebhook.CallbackUrl = webhook.CallbackUrl;
                 existingWebhook.SectorId = webhook.SectorId;
                 existingWebhook.UpdatedAt = DateTime.UtcNow; // Atualiza a data de atualização
 
@@ -95,10 +94,13 @@ namespace LigChat.Backend.Application.Repositories
         /// Obtém todos os webhooks.
         /// </summary>
         /// <returns>Uma coleção de todos os webhooks.</returns>
-        public IEnumerable<Webhook> GetAll()
+        public IEnumerable<Webhook> GetAll(int sectorId)
         {
-            return _context.Webhooks.ToList();
+            return _context.Webhooks
+                           .Where(webhook => webhook.SectorId == sectorId)
+                           .ToList();
         }
+
 
         /// <summary>
         /// Libera os recursos do contexto do banco de dados.

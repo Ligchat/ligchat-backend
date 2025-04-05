@@ -7,7 +7,7 @@ namespace LigChat.Backend.Application.Interface.WebhookInterface
     {
         // Retorna uma coleção de webhooks encapsulada em um DTO com mensagem e código.
         // O DTO WebhookListResponse contém a lista de webhooks e informações adicionais, como mensagens de status.
-        WebhookListResponse GetAll();
+        WebhookListResponse GetAll(int sectorId);
 
         // Retorna um único webhook com base no ID.
         // O retorno é encapsulado em um DTO SingleWebhookResponse com mensagem e código de status.

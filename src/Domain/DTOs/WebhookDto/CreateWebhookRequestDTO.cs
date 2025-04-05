@@ -14,22 +14,10 @@ namespace LigChat.Backend.Domain.DTOs.WebhookDto
         public string Name { get; set; }
 
         /// <summary>
-        /// Chave de token para autenticação.
-        /// Usada para validar solicitações recebidas no webhook.
-        /// </summary>
-        public string TokenKey { get; set; }
-
-        /// <summary>
         /// URL do webhook.
         /// Endereço para o qual as solicitações de webhook serão enviadas.
         /// </summary>
-        public string Url { get; set; }
-
-        /// <summary>
-        /// Status do webhook.
-        /// Pode representar diferentes estados como Ativo ou Inativo.
-        /// </summary>
-        public bool Status { get; set; }
+        public string CallbackUrl { get; set; }
 
         /// <summary>
         /// Identificador do setor associado ao webhook.
@@ -41,22 +29,16 @@ namespace LigChat.Backend.Domain.DTOs.WebhookDto
         /// Construtor para inicializar o DTO com valores específicos.
         /// </summary>
         /// <param name="name">Nome do webhook.</param>
-        /// <param name="tokenKey">Chave de token para autenticação.</param>
-        /// <param name="url">URL do webhook.</param>
-        /// <param name="status">Status do webhook.</param>
+        /// <param name="callbackUrl">URL do webhook.</param>
         /// <param name="sectorId">Identificador do setor associado ao webhook.</param>
         [JsonConstructor]
         public CreateWebhookRequestDTO(
-            string name, 
-            string tokenKey, 
-            string url, 
-            bool status, 
+            string name,
+            string callbackUrl,
             int? sectorId = null)
         {
-            Name = name;
-            TokenKey = tokenKey;
-            Url = url;
-            Status = status;
+            Name = name ?? throw new ArgumentNullException(nameof(name));
+            CallbackUrl = callbackUrl ?? throw new ArgumentNullException(nameof(callbackUrl));
             SectorId = sectorId;
         }
     }

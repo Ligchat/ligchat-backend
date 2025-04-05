@@ -4,16 +4,22 @@
     using global::tests_.src.Domain.Entities;
     using Microsoft.AspNetCore.Mvc;
     using System.Collections.Generic;
+    using System.ComponentModel.DataAnnotations;
+    using LigChat.Backend.Web.Extensions.Database;
+    using global::tests_.src.Domain.DTOs.CardDto;
+
 
     [ApiController]
     [Route("api/[controller]")]
     public class CardsController : ControllerBase
     {
         private readonly ICardService _cardService;
+        private readonly DatabaseConfiguration _context;
 
-        public CardsController(ICardService cardService)
+        public CardsController(ICardService cardService, DatabaseConfiguration context)
         {
             _cardService = cardService;
+            _context = context;
         }
 
         [HttpGet]
@@ -35,22 +41,27 @@
         }
 
         [HttpPost]
-        public ActionResult<Card> CreateCard(Card card)
+        public ActionResult<Card> CreateCard([FromBody] CreateCardRequestDTO request)
         {
-            var createdCard = _cardService.Create(card);
-            return CreatedAtAction(nameof(GetCard), new { id = createdCard.Id }, createdCard);
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+
+            var createdCard = _cardService.Create(request);
+            return Ok(createdCard);
         }
 
         [HttpPut("{id}")]
-        public IActionResult UpdateCard(int id, Card card)
+        public ActionResult<Card> UpdateCard(int id, Card card)
         {
             if (id != card.Id)
             {
                 return BadRequest();
             }
 
-            _cardService.Update(card);
-            return NoContent();
+            var updatedCard = _cardService.Update(card);
+            return Ok(updatedCard);
         }
 
         [HttpDelete("{id}")]
@@ -61,7 +72,7 @@
         }
 
         [HttpPut("{id}/move")]
-        public IActionResult MoveCard(int id, int newColumnId)
+        public IActionResult MoveCard(int id, [FromBody] MoveCardRequest request)
         {
             var card = _cardService.GetById(id);
             if (card == null)
@@ -69,8 +80,35 @@
                 return NotFound();
             }
 
-            _cardService.MoveCard(id, newColumnId);
-            return NoContent();
+            try
+            {
+                _cardService.MoveCard(id, request.NewColumnId, request.NewPosition);
+                return NoContent();
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { message = $"Erro ao mover o card: {ex.Message}" });
+            }
+        }
+
+        public class CreateCardRequest
+        {
+            [Required]
+            public int ContactId { get; set; }
+            public int? ColumnId { get; set; }
+            public int Position { get; set; }
+            public int SectorId { get; set; }
+            public string? Priority { get; set; }
+            public string? ContactStatus { get; set; }
+            public string? Content { get; set; }
+            public DateTime? LastContact { get; set; }
+            public int? AssignedTo { get; set; }
+        }
+
+        public class MoveCardRequest
+        {
+            public int NewColumnId { get; set; }
+            public int NewPosition { get; set; }
         }
     }
 }

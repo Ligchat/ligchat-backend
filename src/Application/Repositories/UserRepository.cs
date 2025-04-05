@@ -22,6 +22,15 @@ namespace LigChat.Backend.Application.Repositories
             _context = context ?? throw new ArgumentNullException(nameof(context)); // Garante que o contexto não seja nulo
         }
 
+        public int GetUserIdByInvitedBy(int invitedById)
+        {
+            return _context.Users
+                .Where(u => u.InvitedBy == invitedById)
+                .Select(u => u.Id)
+                .FirstOrDefault();
+        }
+
+
         /// <summary>
         /// Adiciona um novo usuário ao banco de dados.
         /// </summary>

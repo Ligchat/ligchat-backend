@@ -1,7 +1,9 @@
 ﻿using LigChat.Backend.Application.Common.Mappings.SectorActionResults;
 using LigChat.Backend.Domain.DTOs.SectorDto;
 using LigChat.Data.Interfaces.IControllers;
+using LigChat.Data.Interfaces.IRepositories;
 using LigChat.Data.Interfaces.IServices;
+using LigChat.Data.Repositories;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -12,10 +14,12 @@ namespace LigChat.Api.Controllers
     public class SectorController : ControllerBase, ISectorControllerInterface
     {
         private readonly ISectorServiceInterface _sectorService;
+        private readonly IUserSectorRepositoryInterface _userSectorRepository;
 
-        public SectorController(ISectorServiceInterface sectorService)
+        public SectorController(ISectorServiceInterface sectorService, IUserSectorRepositoryInterface userSectorRepository)
         {
             _sectorService = sectorService;
+            _userSectorRepository = userSectorRepository;
         }
 
         [HttpGet]
@@ -138,6 +142,8 @@ namespace LigChat.Api.Controllers
                     Data = null
                 });
             }
+
+            _userSectorRepository.DeleteAllBySectorId(id);
 
             _sectorService.Delete(id);
             return NoContent();

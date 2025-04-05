@@ -39,6 +39,16 @@ namespace LigChat.Backend.Domain.DTOs.UserDto
         public bool Status { get; set; } = true; // Define o valor padrão como true
 
         /// <summary>
+        /// ID do usuário que convidou este usuário. Este campo é opcional.
+        /// </summary>
+        public int? InvitedBy { get; set; }
+
+        /// <summary>
+        /// Lista de setores associados ao usuário, incluindo a flag de compartilhamento (IsShared).
+        /// </summary>
+        public List<SectorDTO>? Sectors { get; set; }
+
+        /// <summary>
         /// Construtor para inicializar o DTO com valores específicos.
         /// </summary>
         /// <param name="name">Nome do usuário.</param>
@@ -47,6 +57,8 @@ namespace LigChat.Backend.Domain.DTOs.UserDto
         /// <param name="avatarUrl">URL do avatar do usuário.</param>
         /// <param name="isAdmin">Indica se o usuário é um administrador.</param>
         /// <param name="status">Indica se o usuário está ativo.</param>
+        /// <param name="invitedBy">ID do usuário que convidou este usuário.</param>
+        /// <param name="sectors">Lista de setores associados ao usuário.</param>
         [JsonConstructor]
         public CreateUserRequestDTO(
             string name,
@@ -54,14 +66,18 @@ namespace LigChat.Backend.Domain.DTOs.UserDto
             string phoneWhatsapp,
             string? avatarUrl = null,
             bool isAdmin = false,
-            bool status = true) // Adiciona status como parâmetro do construtor
+            bool status = true,
+            int? invitedBy = null,
+            List<SectorDTO>? sectors = null)
         {
             Name = name;
             Email = email;
             PhoneWhatsapp = phoneWhatsapp;
             AvatarUrl = avatarUrl;
-            IsAdmin = isAdmin; // Inicializa a propriedade IsAdmin
-            Status = status; // Inicializa a propriedade Status
+            IsAdmin = isAdmin;
+            Status = status;
+            InvitedBy = invitedBy;
+            Sectors = sectors;
         }
     }
 }

@@ -1,9 +1,12 @@
-﻿using System.ComponentModel.DataAnnotations.Schema;
+﻿using System;
 using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
+using System.Text.Json.Serialization;
+using LigChat.Backend.Domain.Entities;
 
 namespace tests_.src.Domain.Entities
 {
-    [Table("cards")]
+    [Table("cards", Schema = "ligchat")]
     public class Card
     {
         [Key]
@@ -11,23 +14,33 @@ namespace tests_.src.Domain.Entities
         public int Id { get; set; }
 
         [Column("contact_id")]
-        public int ContactId { get; set; }
-
-        [Column("tag_id")]
-        public int? TagId { get; set; }
+        public int? ContactId { get; set; }
 
         [Column("column_id")]
-        public int ColumnId { get; set; }
+        public int? ColumnId { get; set; }
 
-        [Column("last_contact")]
-        public DateTime? LastContact { get; set; }
+        [Column("position")]
+        [Required]
+        public int Position { get; set; } = 1;
 
-        // Relacionamento com a entidade Contato (opcional)
+        [Column("sector_id")]
+        public int? SectorId { get; set; }
+
+        [Column("created_at")]
+        [Required]
+        public DateTime CreatedAt { get; set; }
+
         [ForeignKey("ContactId")]
-        public virtual Contato? Contato { get; set; }
+        public Contact? Contact { get; set; }
 
-        // Relacionamento com a entidade Coluna (opcional)
         [ForeignKey("ColumnId")]
-        public virtual Coluna? Column { get; set; }
+        [JsonIgnore]
+        public Coluna? Column { get; set; }
+
+        public Card()
+        {
+            CreatedAt = DateTime.UtcNow;
+            Position = 1;
+        }
     }
 }

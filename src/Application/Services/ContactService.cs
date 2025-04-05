@@ -2,18 +2,56 @@ using LigChat.Backend.Application.Common.Mappings.ContactActionResults;
 using LigChat.Backend.Application.Interface.ContactInterface;
 using LigChat.Backend.Domain.DTOs.ContactDto;
 using LigChat.Backend.Domain.Entities;
+using LigChat.Backend.Web.Extensions.Database;
+using System.Collections.Generic;
 using System.Linq;
+using tests_.src.Domain.Entities;
 
-namespace LigChat.Com.Api.Mvc.ContactMvc.Service
+namespace LigChat.Backend.Application.Services
 {
     public class ContactService : IContactServiceInterface
     {
         private readonly IContactRepositoryInterface _contactRepository;
+        private readonly DatabaseConfiguration _context;
 
         // Construtor que injeta as dependências necessárias
-        public ContactService(IContactRepositoryInterface contactRepository)
+        public ContactService(IContactRepositoryInterface contactRepository, DatabaseConfiguration context)
         {
             _contactRepository = contactRepository;
+            _context = context;
+        }
+
+        private void EnsureContactHasCard(Contact contact)
+        {
+            var existingCard = _context.Cards
+                .FirstOrDefault(c => c.ContactId == contact.Id);
+
+            if (existingCard == null)
+            {
+                var firstColumn = _context.Colunas
+                    .Where(c => c.SectorId == contact.SectorId)
+                    .OrderBy(c => c.Position)
+                    .FirstOrDefault();
+
+                if (firstColumn != null)
+                {
+                    var lastPosition = _context.Cards
+                        .Where(c => c.ColumnId == firstColumn.Id)
+                        .Max(c => (int?)c.Position) ?? 0;
+
+                    var newCard = new Card
+                    {
+                        ContactId = contact.Id,
+                        ColumnId = firstColumn.Id,
+                        Position = lastPosition + 1,
+                        SectorId = contact.SectorId,
+                        CreatedAt = DateTime.UtcNow
+                    };
+
+                    _context.Cards.Add(newCard);
+                    _context.SaveChanges();
+                }
+            }
         }
 
         /// <summary>
@@ -22,17 +60,24 @@ namespace LigChat.Com.Api.Mvc.ContactMvc.Service
         public ContactListResponse GetAll()
         {
             var contacts = _contactRepository.GetAll();
-            var contactDtos = contacts.Select(c => new ContactViewModel(
-                c.Id,
-                c.Name,
-                c.TagId,
-                c.Number,
-                c.ProfilePicUrl, // Incluído
-                c.Email,
-                c.Notes,
-                c.Status,
-                c.SectorId
-            )).ToList(); // Convert to List for better performance in case of large datasets
+            var contactDtos = contacts.Select(c => new ContactViewModel
+            {
+                Id = c.Id,
+                Name = c.Name,
+                TagId = c.TagId,
+                Number = c.Number,
+                AvatarUrl = c.AvatarUrl,
+                Email = c.Email ?? string.Empty,
+                Notes = c.Notes,
+                IsActive = c.IsActive,
+                Priority = c.Priority,
+                ContactStatus = c.ContactStatus,
+                SectorId = c.SectorId,
+                AiActive = c.AiActive,
+                AssignedTo = c.AssignedTo,
+                CreatedAt = c.CreatedAt,
+                UpdatedAt = c.UpdatedAt
+            }).ToList();
 
             return new ContactListResponse("Success", "200", contactDtos);
         }
@@ -48,17 +93,24 @@ namespace LigChat.Com.Api.Mvc.ContactMvc.Service
                 return new SingleContactResponse("Contact not found", "404", null);
             }
 
-            var contactDto = new ContactViewModel(
-                contact.Id,
-                contact.Name,
-                contact.TagId,
-                contact.Number,
-                contact.ProfilePicUrl, // Incluído
-                contact.Email,
-                contact.Notes,
-                contact.Status,
-                contact.SectorId
-            );
+            var contactDto = new ContactViewModel
+            {
+                Id = contact.Id,
+                Name = contact.Name,
+                TagId = contact.TagId,
+                Number = contact.Number,
+                AvatarUrl = contact.AvatarUrl,
+                Email = contact.Email ?? string.Empty,
+                Notes = contact.Notes,
+                IsActive = contact.IsActive,
+                Priority = contact.Priority,
+                ContactStatus = contact.ContactStatus,
+                SectorId = contact.SectorId,
+                AiActive = contact.AiActive,
+                AssignedTo = contact.AssignedTo,
+                CreatedAt = contact.CreatedAt,
+                UpdatedAt = contact.UpdatedAt
+            };
 
             return new SingleContactResponse("Success", "200", contactDto);
         }
@@ -68,13 +120,11 @@ namespace LigChat.Com.Api.Mvc.ContactMvc.Service
         /// </summary>
         public SingleContactResponse Save(CreateContactRequestDTO contactDto)
         {
-            // Validação dos dados do contato
             if (string.IsNullOrWhiteSpace(contactDto.Name) || string.IsNullOrWhiteSpace(contactDto.Number))
             {
                 return new SingleContactResponse("Invalid request", "400", null);
             }
 
-            // Criação do novo contato a partir do DTO
             var contact = new Contact
             {
                 Name = contactDto.Name,
@@ -82,26 +132,38 @@ namespace LigChat.Com.Api.Mvc.ContactMvc.Service
                 Number = contactDto.Number,
                 Email = contactDto.Email,
                 Notes = contactDto.Notes,
-                Status = contactDto.Status,
+                IsActive = contactDto.IsActive,
                 SectorId = contactDto.SectorId,
-                ProfilePicUrl = contactDto.ProfilePicUrl // Incluído
+                AvatarUrl = contactDto.AvatarUrl,
+                Priority = contactDto.Priority ?? "normal",
+                ContactStatus = "Novo",
+                AiActive = contactDto.AiActive,
+                AssignedTo = contactDto.AssignedTo,
+                CreatedAt = DateTime.UtcNow,
+                UpdatedAt = DateTime.UtcNow
             };
 
-            // Salva o contato no repositório
             var savedContact = _contactRepository.Save(contact);
+            EnsureContactHasCard(savedContact);
 
-            // Cria e retorna a resposta
-            var responseDto = new ContactViewModel(
-                savedContact.Id,
-                savedContact.Name,
-                savedContact.TagId,
-                savedContact.Number,
-                savedContact.ProfilePicUrl, // Incluído
-                savedContact.Email,
-                savedContact.Notes,
-                savedContact.Status,
-                savedContact.SectorId
-            );
+            var responseDto = new ContactViewModel
+            {
+                Id = savedContact.Id,
+                Name = savedContact.Name,
+                TagId = savedContact.TagId,
+                Number = savedContact.Number,
+                AvatarUrl = savedContact.AvatarUrl,
+                Email = savedContact.Email ?? string.Empty,
+                Notes = savedContact.Notes,
+                IsActive = savedContact.IsActive,
+                Priority = savedContact.Priority,
+                ContactStatus = savedContact.ContactStatus,
+                SectorId = savedContact.SectorId,
+                AiActive = savedContact.AiActive,
+                AssignedTo = savedContact.AssignedTo,
+                CreatedAt = savedContact.CreatedAt,
+                UpdatedAt = savedContact.UpdatedAt
+            };
 
             return new SingleContactResponse("Contact created successfully", "201", responseDto);
         }
@@ -130,25 +192,36 @@ namespace LigChat.Com.Api.Mvc.ContactMvc.Service
             existingContact.Number = contactDto.PhoneWhatsapp;
             existingContact.Email = contactDto.Email;
             existingContact.Notes = contactDto.Notes;
-            existingContact.Status = contactDto.Status;
-            existingContact.SectorId = contactDto.SectorId;
-            existingContact.ProfilePicUrl = contactDto.ProfilePicUrl; // Incluído
+            existingContact.IsActive = contactDto.IsActive;
+            existingContact.SectorId = contactDto.SectorId ?? existingContact.SectorId;
+            existingContact.AvatarUrl = contactDto.AvatarUrl;
+            existingContact.Priority = contactDto.Priority;
+            existingContact.AiActive = contactDto.AiActive;
+            existingContact.AssignedTo = contactDto.AssignedTo ?? existingContact.AssignedTo;
+            existingContact.UpdatedAt = DateTime.UtcNow;
 
             // Salva o contato atualizado no repositório
             var savedContact = _contactRepository.Update(id, existingContact);
 
             // Cria e retorna a resposta
-            var responseDto = new ContactViewModel(
-                savedContact.Id,
-                savedContact.Name,
-                savedContact.TagId,
-                savedContact.Number,
-                savedContact.ProfilePicUrl, // Incluído
-                savedContact.Email,
-                savedContact.Notes,
-                savedContact.Status,
-                savedContact.SectorId
-            );
+            var responseDto = new ContactViewModel
+            {
+                Id = savedContact.Id,
+                Name = savedContact.Name,
+                TagId = savedContact.TagId,
+                Number = savedContact.Number,
+                AvatarUrl = savedContact.AvatarUrl,
+                Email = savedContact.Email ?? string.Empty,
+                Notes = savedContact.Notes,
+                IsActive = savedContact.IsActive,
+                Priority = savedContact.Priority,
+                ContactStatus = savedContact.ContactStatus,
+                SectorId = savedContact.SectorId,
+                AiActive = savedContact.AiActive,
+                AssignedTo = savedContact.AssignedTo,
+                CreatedAt = savedContact.CreatedAt,
+                UpdatedAt = savedContact.UpdatedAt
+            };
 
             return new SingleContactResponse("Contact updated successfully", "200", responseDto);
         }
@@ -166,19 +239,53 @@ namespace LigChat.Com.Api.Mvc.ContactMvc.Service
             }
 
             // Cria e retorna a resposta
-            var responseDto = new ContactViewModel(
-                deletedContact.Id,
-                deletedContact.Name,
-                deletedContact.TagId,
-                deletedContact.Number,
-                deletedContact.ProfilePicUrl, // Incluído
-                deletedContact.Email,
-                deletedContact.Notes,
-                deletedContact.Status,
-                deletedContact.SectorId
-            );
+            var responseDto = new ContactViewModel
+            {
+                Id = deletedContact.Id,
+                Name = deletedContact.Name,
+                TagId = deletedContact.TagId,
+                Number = deletedContact.Number,
+                AvatarUrl = deletedContact.AvatarUrl,
+                Email = deletedContact.Email ?? string.Empty,
+                Notes = deletedContact.Notes,
+                IsActive = deletedContact.IsActive,
+                Priority = deletedContact.Priority,
+                ContactStatus = deletedContact.ContactStatus,
+                SectorId = deletedContact.SectorId,
+                AiActive = deletedContact.AiActive
+            };
 
             return new SingleContactResponse("Contact deleted successfully", "200", responseDto);
+        }
+
+        public ContactListResponse GetBySector(int sectorId)
+        {
+            var contacts = _contactRepository.GetBySectorId(sectorId);
+            if (!contacts.Any())
+            {
+                return new ContactListResponse($"No contacts found for sector with ID {sectorId}.", "404", new List<ContactViewModel>());
+            }
+
+            var contactDtos = contacts.Select(c => new ContactViewModel
+            {
+                Id = c.Id,
+                Name = c.Name,
+                TagId = c.TagId,
+                Number = c.Number,
+                AvatarUrl = c.AvatarUrl,
+                Email = c.Email ?? string.Empty,
+                Notes = c.Notes,
+                IsActive = c.IsActive,
+                Priority = c.Priority,
+                ContactStatus = c.ContactStatus,
+                SectorId = c.SectorId,
+                AiActive = c.AiActive,
+                AssignedTo = c.AssignedTo,
+                CreatedAt = c.CreatedAt,
+                UpdatedAt = c.UpdatedAt
+            }).ToList();
+
+            return new ContactListResponse("Success", "200", contactDtos);
         }
     }
 }

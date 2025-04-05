@@ -1,7 +1,6 @@
 using LigChat.Backend.Domain.Entities;
 
-namespace LigChat.Backend.Application.Common.Mappings.FlowResults
-{
+namespace tests_.src.Domain.Entities;
     /// <summary>
     /// Representa o modelo de visualização para dados do fluxo na API.
     /// </summary>
@@ -60,4 +59,3 @@ namespace LigChat.Backend.Application.Common.Mappings.FlowResults
             Sector = sector;
         }
     }
-}

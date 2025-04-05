@@ -1,0 +1,148 @@
+﻿<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Código de Verificação</title>
+    <style>
+        body {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            background-color: #f0f8ff; /* Branco claro */
+            color: #000080; /* Azul escuro */
+            margin: 0;
+            font-family: Arial, sans-serif;
+            padding: 1rem;
+            box-sizing: border-box;
+        }
+
+        .container {
+            background-color: #ffffff; /* Branco */
+            max-width: 600px;
+            width: 100%;
+            border-radius: 0.5rem;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+            margin: auto;
+        }
+
+        .header {
+            background-color: #000080; /* Azul escuro */
+            color: #ffffff; /* Branco */
+            text-align: center;
+            padding: 1.5rem;
+        }
+
+            /* .header img {
+                max-width: 120px;
+                height: auto;
+                margin-bottom: 1rem;
+            }
+               */
+
+            .header h1 {
+                font-size: 1.75rem;
+                font-weight: bold;
+                margin: 0;
+            }
+
+        .content {
+            padding: 2rem 1.5rem;
+            color: #000080; /* Azul escuro */
+        }
+
+            .content h2 {
+                color: #000080; /* Azul escuro */
+                font-size: 1.5rem;
+                font-weight: 600;
+                margin-bottom: 0.75rem;
+            }
+
+            .content p {
+                color: #000080; /* Azul escuro */
+                margin: 0.75rem 0;
+                line-height: 1.6;
+            }
+
+        .verification-code {
+            background-color: #f0f8ff; /* Azul claro */
+            color: #000080; /* Azul escuro */
+            padding: 1rem;
+            border-radius: 0.5rem;
+            text-align: center;
+            margin: 1.5rem 0;
+            font-size: 1.75rem;
+            font-weight: bold;
+        }
+
+        .btn {
+            display: inline-block;
+            margin-top: 1.5rem;
+            background-color: #000080; /* Azul escuro */
+            color: #ffffff !important;
+            text-align: center;
+            padding: 0.75rem 1.5rem;
+            font-weight: bold;
+            border-radius: 0.5rem;
+            text-decoration: none;
+        }
+
+        .footer {
+            background-color: #f0f8ff; /* Azul claro */
+            color: #000080; /* Azul escuro */
+            text-align: center;
+            padding: 1rem;
+        }
+
+            .footer a {
+                color: #000080; /* Azul escuro */
+                text-decoration: none;
+            }
+
+                .footer a:hover {
+                    text-decoration: underline;
+                }
+
+        @media (max-width: 600px) {
+            .content {
+                padding: 1.5rem;
+            }
+
+            .verification-code {
+                font-size: 1.5rem;
+            }
+
+            .btn {
+                width: 100%;
+                padding: 1rem;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Código de Verificação</h1>
+        </div>
+        <div class="content">
+            <h2>Olá, Bem vindo ao LigChat.</h2>
+            <p>Você solicitou um código de verificação para efetuar login. Utilize o código abaixo para continuar:</p>
+            <div class="verification-code">
+                {{codigo_verificacao}}
+            </div>
+            <p>Se você não solicitou este código, por favor ignore este e-mail ou entre em contato conosco se tiver alguma dúvida.</p>
+            <a href="https://localhost:3000" class="btn">Acessar Minha Conta</a>
+        </div>
+        <div class="footer">
+            <p>Obrigado por utilizar nossos serviços.</p>
+            <p>Se precisar de ajuda, não hesite em <a href="https://localhost:3000">entrar em contato</a>.</p>
+        </div>
+    </div>
+</body>
+
+</html>

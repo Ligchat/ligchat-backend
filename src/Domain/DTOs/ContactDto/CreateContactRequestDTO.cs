@@ -1,4 +1,5 @@
 using System.Text.Json.Serialization;
+using System.ComponentModel.DataAnnotations;
 
 namespace LigChat.Backend.Domain.DTOs.ContactDto
 {
@@ -11,30 +12,32 @@ namespace LigChat.Backend.Domain.DTOs.ContactDto
         /// Nome do contato.
         /// Representa o nome completo ou o nome pelo qual o usuário é conhecido.
         /// </summary>
+        [Required]
         public string Name { get; set; }
 
         /// <summary>
         /// Identificador da etiqueta associada ao contato.
         /// Referencia a tag que categoriza o contato.
         /// </summary>
-        public int TagId { get; set; }
+        public int? TagId { get; set; }
 
         /// <summary>
         /// Número de WhatsApp do contato.
         /// Usado para contato via WhatsApp. Pode conter apenas números e alguns caracteres especiais.
         /// </summary>
+        [Required]
         public string Number { get; set; }
 
         /// <summary>
         /// URL da foto de perfil do WhatsApp.
         /// </summary>
-        public string? ProfilePicUrl { get; set; }
+        public string? AvatarUrl { get; set; }
 
         /// <summary>
         /// E-mail do contato.
         /// Utilizado para comunicação e autenticação do contato.
         /// </summary>
-        public string Email { get; set; }
+        public string? Email { get; set; }
 
         /// <summary>
         /// Notas adicionais sobre o contato.
@@ -45,13 +48,30 @@ namespace LigChat.Backend.Domain.DTOs.ContactDto
         /// <summary>
         /// Identificador do setor associado ao contato.
         /// </summary>
-        public int? SectorId { get; set; }
+        [Required]
+        public int SectorId { get; set; }
 
         /// <summary>
         /// Status do contato.
         /// Indica se o contato está ativo ou não.
         /// </summary>
-        public bool Status { get; set; }
+        [Required]
+        public bool IsActive { get; set; } = true;
+
+        /// <summary>
+        /// Identificador do setor associado ao contato.
+        /// </summary>
+        public int AiActive { get; set; } = 1;
+
+        /// <summary>
+        /// Identificador do setor associado ao contato.
+        /// </summary>
+        public int? AssignedTo { get; set; }
+
+        /// <summary>
+        /// Prioridade do contato.
+        /// </summary>
+        public string? Priority { get; set; } = "normal";
 
         /// <summary>
         /// Construtor para inicialização da classe <see cref="CreateContactRequestDTO"/>.
@@ -68,21 +88,27 @@ namespace LigChat.Backend.Domain.DTOs.ContactDto
         public CreateContactRequestDTO(
             string name,
             int tagId,
-                        string email,
             string number,
-            string? profilePicUrl = null,
+            string? avatarUrl = null,
+            string? email = null,
             string? notes = null,
-            int? sectorId = null,
-            bool status = false)
+            int sectorId = 0,
+            bool isActive = true,
+            int aiActive = 1,
+            int? assignedTo = null,
+            string? priority = "normal")
         {
             Name = name;
             TagId = tagId;
             Number = number;
-            ProfilePicUrl = profilePicUrl;
+            AvatarUrl = avatarUrl;
             Email = email;
             Notes = notes;
             SectorId = sectorId;
-            Status = status; // Inicializa o status
+            IsActive = isActive;
+            AiActive = aiActive;
+            AssignedTo = assignedTo;
+            Priority = priority;
         }
     }
 }

@@ -1,5 +1,6 @@
 ﻿namespace tests_.src.Web.Controller
 {
+    using global::tests_.src.Application.Services;
     using global::tests_.src.Application.Services.tests_.src.Application.Services;
     using global::tests_.src.Domain.Entities;
     using Microsoft.AspNetCore.Mvc;
@@ -43,24 +44,43 @@
             [HttpPost]
             public async Task<ActionResult<FlowWhatsapp>> CreateFlow([FromBody] FlowWhatsapp flow)
             {
+                if (flow == null)
+                {
+                    Console.WriteLine("Corpo da requisição está nulo.");
+                    return BadRequest("O corpo da requisição é inválido.");
+                }
+
+                Console.WriteLine($"Flow recebido: {System.Text.Json.JsonSerializer.Serialize(flow)}");
+
                 await _flowService.CreateFlowAsync(flow);
                 return CreatedAtAction(nameof(GetFlow), new { id = flow.Id }, flow);
             }
 
             // PUT: api/flowwhatsapp/{id}
             [HttpPut("{id:length(24)}")]
-            public async Task<IActionResult> UpdateFlow(string id, [FromBody] FlowWhatsapp flowIn)
+            public async Task<IActionResult> UpdateOrCreateFlow(string id, [FromBody] FlowWhatsapp flowIn)
             {
-                var flow = await _flowService.GetFlowByIdAsync(id);
-                if (flow == null)
+                if (flowIn == null)
                 {
-                    return NotFound();
+                    return BadRequest("O corpo da requisição é inválido.");
                 }
 
-                await _flowService.UpdateFlowAsync(id, flowIn);
+                // Verifica se o fluxo existe
+                var flow = await _flowService.GetFlowByIdAsync(id);
 
+                if (flow == null)
+                {
+                    // Cria um novo fluxo caso ele não exista
+                    flowIn.Id = id; // Garante que o ID será o mesmo do parâmetro
+                    await _flowService.CreateFlowAsync(flowIn);
+                    return CreatedAtAction(nameof(GetFlow), new { id = flowIn.Id }, flowIn);
+                }
+
+                // Atualiza o fluxo existente
+                await _flowService.UpdateFlowAsync(id, flowIn);
                 return NoContent();
             }
+
 
             // DELETE: api/flowwhatsapp/{id}
             [HttpDelete("{id:length(24)}")]

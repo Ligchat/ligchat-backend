@@ -20,6 +20,13 @@ namespace LigChat.Data.Repositories
             return sector;
         }
 
+        public IEnumerable<Sector> GetByIds(IEnumerable<int> sectorIds)
+{
+    return _context.Set<Sector>().Where(s => sectorIds.Contains(s.Id)).ToList();
+}
+
+
+
         public Sector Update(int id, Sector sector)
         {
             var existingSector = _context.Sectors.Find(id);

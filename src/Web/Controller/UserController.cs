@@ -1,7 +1,16 @@
 using LigChat.Backend.Application.Common.Mappings.UserActionResults;
 using LigChat.Backend.Application.Interface.UserInterface;
+using LigChat.Backend.Domain.DTOs.SectorDto;
 using LigChat.Backend.Domain.DTOs.UserDto;
+using LigChat.Backend.Domain.Entities;
+using LigChat.Data.Interfaces.IServices;
+using LigChat.Data.Interfaces.IRepositories;
 using Microsoft.AspNetCore.Mvc;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using tests_.src.Domain.Entities.LigChat.Backend.Domain.Entities;
+using LigChat.Backend.Application.Repositories;
 
 namespace LigChat.Backend.Web.Controller
 {
@@ -10,25 +19,31 @@ namespace LigChat.Backend.Web.Controller
     public class UserController : ControllerBase, IUserControllerInterface
     {
         private readonly IUserServiceInterface _userService;
+        private readonly ISectorServiceInterface _sectorService;
+        private readonly IUserRepositoryInterface _userRepository;
+        private readonly IUserSectorRepositoryInterface _userSectorRepository;
+        private readonly ISectorRepositoryInterface _sectorRepository;
 
-        // Construtor que injeta o serviço de usuário.
-        // Recebe uma instância de IUserServiceInterface que será usada para operações de CRUD.
-        public UserController(IUserServiceInterface userService)
+        public UserController(
+            IUserServiceInterface userService, 
+            ISectorServiceInterface sectorService, 
+            IUserSectorRepositoryInterface userSectorRepository, 
+            IUserRepositoryInterface userRepository,
+            ISectorRepositoryInterface sectorRepository)
         {
             _userService = userService ?? throw new ArgumentNullException(nameof(userService));
+            _userRepository = userRepository;
+            _sectorService = sectorService ?? throw new ArgumentNullException(nameof(sectorService));
+            _userSectorRepository = userSectorRepository ?? throw new ArgumentNullException(nameof(userSectorRepository));
+            _sectorRepository = sectorRepository ?? throw new ArgumentNullException(nameof(sectorRepository));
         }
 
-        /// <summary>
-        /// Obtém todos os usuários.
-        /// Retorna uma resposta com uma lista de usuários.
-        /// </summary>
         [HttpGet]
-        public IActionResult GetAll()
+        public IActionResult GetAll(int? invitedBy = null)
         {
-            var userListResponse = _userService.GetAll();
+            var userListResponse = _userService.GetAll(invitedBy);
             if (userListResponse == null || !userListResponse.Data.Any())
             {
-                // Retorna uma resposta 404 se nenhum usuário for encontrado.
                 return NotFound(new UserListResponse
                 {
                     Message = "No users found.",
@@ -36,22 +51,15 @@ namespace LigChat.Backend.Web.Controller
                     Data = new List<UserViewModel>()
                 });
             }
-
             return Ok(userListResponse);
         }
 
-        /// <summary>
-        /// Obtém um usuário pelo ID.
-        /// Retorna uma resposta com os dados do usuário ou uma mensagem de erro se o usuário não for encontrado.
-        /// </summary>
         [HttpGet("{id}")]
         public IActionResult GetById(int id)
         {
             var userResponse = _userService.GetById(id);
-
             if (userResponse == null)
             {
-                // Retorna uma resposta 404 se o usuário não for encontrado.
                 return NotFound(new SingleUserResponse
                 {
                     Message = "User not found.",
@@ -59,28 +67,20 @@ namespace LigChat.Backend.Web.Controller
                     Data = null
                 });
             }
-
             return Ok(userResponse);
         }
 
-        /// <summary>
-        /// Cria um novo usuário com base nos dados fornecidos.
-        /// Retorna uma resposta com os dados do usuário criado ou uma mensagem de erro se a criação falhar.
-        /// </summary>
         [HttpPost]
         public IActionResult Save([FromBody] CreateUserRequestDTO userDto)
         {
             if (userDto == null)
             {
-                // Retorna uma resposta 400 se os dados do usuário não forem fornecidos.
                 return BadRequest("User data is required.");
             }
 
             var createdUserResponse = _userService.Save(userDto);
-
             if (createdUserResponse == null)
             {
-                // Retorna uma resposta 400 se a criação do usuário falhar.
                 return BadRequest(new SingleUserResponse
                 {
                     Message = "User could not be created.",
@@ -89,32 +89,44 @@ namespace LigChat.Backend.Web.Controller
                 });
             }
 
-            // Retorna uma resposta 201 com a localização do novo usuário.
-            return CreatedAtAction(
-                nameof(GetById),
-                new { id = createdUserResponse.Data?.Id },
-                createdUserResponse
-            );
+            if (userDto.Sectors != null)
+            {
+                foreach (var sectorDto in userDto.Sectors)
+                {
+                    var sectorExistenceResponse = _sectorService.SectorExists(createdUserResponse.Data.Id, sectorDto.Id);
+                    if (sectorExistenceResponse.Exists)
+                    {
+                        continue;
+                    }
+
+                    var existingSectorResponse = _sectorService.GetById(sectorDto.Id);
+                    if (existingSectorResponse != null && sectorDto.IsShared)
+                    {
+                        var userSector = new UserSector
+                        {
+                            UserId = createdUserResponse.Data.Id,
+                            SectorId = sectorDto.Id,
+                            IsShared = true
+                        };
+                        _userSectorRepository.Save(userSector);
+                    }
+                }
+            }
+
+            return CreatedAtAction(nameof(GetById), new { id = createdUserResponse.Data?.Id }, createdUserResponse);
         }
 
-        /// <summary>
-        /// Atualiza um usuário existente com base nos dados fornecidos.
-        /// Retorna uma resposta 204 se a atualização for bem-sucedida ou uma mensagem de erro se a atualização falhar.
-        /// </summary>
         [HttpPut("{id}")]
         public IActionResult Update(int id, [FromBody] UpdateUserRequestDTO userDto)
         {
             if (userDto == null)
             {
-                // Retorna uma resposta 400 se os dados do usuário não forem fornecidos.
                 return BadRequest("User data is required.");
             }
 
             var existingUserResponse = _userService.GetById(id);
-
             if (existingUserResponse == null)
             {
-                // Retorna uma resposta 404 se o usuário não for encontrado.
                 return NotFound(new SingleUserResponse
                 {
                     Message = "User not found.",
@@ -126,7 +138,6 @@ namespace LigChat.Backend.Web.Controller
             var updatedUserResponse = _userService.Update(id, userDto);
             if (updatedUserResponse == null)
             {
-                // Retorna uma resposta 400 se a atualização falhar.
                 return BadRequest(new SingleUserResponse
                 {
                     Message = "User could not be updated.",
@@ -135,22 +146,39 @@ namespace LigChat.Backend.Web.Controller
                 });
             }
 
-            // Retorna uma resposta 204 indicando que a atualização foi bem-sucedida.
-            return NoContent();
+            if (userDto.Sectors != null)
+            {
+                // Obter os setores atuais do usuário
+                var currentUserSectors = _userSectorRepository.GetAllByUserId(updatedUserResponse.Data.Id);
+
+                // Remover todos os setores atuais
+                foreach (var sector in currentUserSectors)
+                {
+                    _userSectorRepository.Delete(sector.Id);
+                }
+
+                // Adicionar os novos setores
+                foreach (var sectorDto in userDto.Sectors)
+                {
+                    var newSector = new UserSector
+                    {
+                        UserId = updatedUserResponse.Data.Id,
+                        SectorId = sectorDto.Id,
+                        IsShared = true
+                    };
+                    _userSectorRepository.Save(newSector);
+                }
+            }
+
+            return Ok(updatedUserResponse);
         }
 
-        /// <summary>
-        /// Deleta um usuário pelo ID.
-        /// Retorna uma resposta 204 se a exclusão for bem-sucedida ou uma mensagem de erro se o usuário não for encontrado.
-        /// </summary>
         [HttpDelete("{id}")]
         public IActionResult Delete(int id)
         {
             var userResponse = _userService.GetById(id);
-
             if (userResponse == null)
             {
-                // Retorna uma resposta 404 se o usuário não for encontrado.
                 return NotFound(new SingleUserResponse
                 {
                     Message = "User not found.",
@@ -160,7 +188,6 @@ namespace LigChat.Backend.Web.Controller
             }
 
             _userService.Delete(id);
-            // Retorna uma resposta 204 indicando que a exclusão foi bem-sucedida.
             return NoContent();
         }
     }

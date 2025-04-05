@@ -23,9 +23,9 @@ namespace LigChat.Backend.Web.Controller
         /// Retorna uma resposta com uma lista de webhooks.
         /// </summary>
         [HttpGet]
-        public IActionResult GetAll()
+        public IActionResult GetAll(int sectorId)
         {
-            var webhookListResponse = _webhookService.GetAll();
+            var webhookListResponse = _webhookService.GetAll(sectorId);
             if (webhookListResponse == null || !webhookListResponse.Data.Any())
             {
                 // Retorna uma resposta 404 se nenhum webhook for encontrado.

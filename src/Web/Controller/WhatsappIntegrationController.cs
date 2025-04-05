@@ -52,7 +52,7 @@ namespace LigChat.Backend.Web.Controller
         [HttpPost("send-message")]
         public async Task<IActionResult> SendMessage([FromBody] WhatsAppTextMessageDTO dto)
         {
-            await _whatsAppService.SendTextMessageAsync(dto.RecipientPhone, dto.Text, dto.SettingsId);
+            await _whatsAppService.SendTextMessageAsync(dto.RecipientPhone, dto.Text, dto.SectorId);
             return Ok(new { message = "Mensagem enviada com sucesso" });
         }
 

@@ -6,7 +6,7 @@ namespace LigChat.Backend.Application.Interface.UserInterface
     public interface IUserServiceInterface
     {
         // Retorna uma coleção de usuários encapsulada em um DTO com mensagem e código.
-        UserListResponse GetAll();
+        UserListResponse GetAll(int? invitedBy);
 
         // Retorna um único usuário com base no ID.
         SingleUserResponse? GetById(int id);

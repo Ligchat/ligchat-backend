@@ -15,6 +15,8 @@ namespace LigChat.Data.Repositories
 
         public Tag Save(Tag tag)
         {
+            tag.CreatedAt = DateTime.UtcNow;
+            tag.UpdatedAt = DateTime.UtcNow;
             _context.Tags.Add(tag);
             _context.SaveChanges();
             return tag;
@@ -28,6 +30,9 @@ namespace LigChat.Data.Repositories
             {
                 existingTag.Name = tag.Name;
                 existingTag.Description = tag.Description;
+                existingTag.Color = tag.Color;
+                existingTag.Status = tag.Status;
+                existingTag.UpdatedAt = DateTime.UtcNow;
                 _context.SaveChanges();
                 return existingTag;
             }

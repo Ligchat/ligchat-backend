@@ -17,7 +17,7 @@ namespace LigChat.Backend.Domain.Entities.Interfaces
         /// Identificador da etiqueta associada ao contato.
         /// Referencia a tag que categoriza o contato.
         /// </summary>
-        int TagId { get; set; }
+        int? TagId { get; set; }
 
         /// <summary>
         /// Número de WhatsApp do contato.
@@ -25,17 +25,21 @@ namespace LigChat.Backend.Domain.Entities.Interfaces
         /// </summary>
         string Number { get; set; }
 
-
         /// <summary>
         /// E-mail do contato.
         /// Utilizado para comunicação e, possivelmente, para autenticação.
         /// </summary>
-        string Email { get; set; }
+        string? Email { get; set; }
 
         /// <summary>
         /// Notas adicionais sobre o contato.
         /// Campo opcional. Pode conter informações adicionais ou comentários sobre o contato.
         /// </summary>
         string? Notes { get; set; }
+
+        /// <summary>
+        /// Indica se o contato está ativo.
+        /// </summary>
+        bool IsActive { get; set; }
     }
 }

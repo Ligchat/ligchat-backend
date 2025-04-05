@@ -35,12 +35,12 @@
 
             public async Task UpdateFlowAsync(string id, FlowWhatsapp flowIn)
             {
-                await _flowsWhatsapp.ReplacLigChateAsync(flow => flow.Id == id, flowIn);
+                await _flowsWhatsapp.ReplaceOneAsync(flow => flow.Id == id, flowIn);
             }
 
             public async Task RemoveFlowAsync(string id)
             {
-                await _flowsWhatsapp.DeletLigChateAsync(flow => flow.Id == id);
+                await _flowsWhatsapp.DeleteOneAsync(flow => flow.Id == id);
             }
         }
     }

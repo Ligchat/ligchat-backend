@@ -46,6 +46,14 @@ namespace LigChat.Backend.Domain.Entities
         public int? SectorId { get; set; }
 
         /// <summary>
+        /// Cor da tag.
+        /// Este campo é opcional e representa a cor associada à tag.
+        /// </summary>
+        [Column("color")]
+        [MaxLength(7)]
+        public string Color { get; set; } = "#000000";
+
+        /// <summary>
         /// Data e hora de criação da tag.
         /// Este campo é utilizado para registrar quando a tag foi criada.
         /// </summary>

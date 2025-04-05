@@ -18,6 +18,8 @@ namespace LigChat.Backend.Application.Interface.UserInterface
         // Retorna uma coleção de objetos User.
         IEnumerable<User> GetAll();
 
+        int GetUserIdByInvitedBy(int invitedById);
+
         // Salva um novo usuário no repositório.
         // Retorna o objeto User que foi salvo.
         User Add(User user);

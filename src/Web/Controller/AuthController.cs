@@ -1,21 +1,18 @@
 ﻿using System.IdentityModel.Tokens.Jwt;
 using System.Net;
 using System.Net.Mail;
+using System.IO;
 using System.Text;
-using LigChat.Backend.Domain.Entities;
 using LigChat.Backend.Application.Interface.UserInterface;
 using LigChat.Backend.Web.Services;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Tokens;
-using System.Threading.Tasks;
-using System.Linq;
 
 namespace LigChat.Backend.Web.Controllers
 {
     [ApiController]
     [Route("api/auth")]
-    public class AuthController: ControllerBase
+    public class AuthController : ControllerBase
     {
         private readonly JwtTokenService _jwtTokenService;
         private readonly IConfiguration _configuration;
@@ -27,6 +24,7 @@ namespace LigChat.Backend.Web.Controllers
             _configuration = configuration;
             _userService = userService;
         }
+
         private async Task SendEmailAsync(string toEmail, string subject, string body)
         {
             try
@@ -48,19 +46,27 @@ namespace LigChat.Backend.Web.Controllers
                         mailMessage.Body = body;
                         mailMessage.IsBodyHtml = true;
 
+                        // Adiciona a logo como anexo
+                     //   var logoPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "src/Assets", "Logo.png");
+
+                     //   if (System.IO.File.Exists(logoPath)) 
+                     //   {
+                    //        var logoAttachment = new Attachment(logoPath);
+                    //        logoAttachment.ContentId = "logo"; // Isso deve corresponder ao cid no HTML
+                   //         mailMessage.Attachments.Add(logoAttachment);
+                    //    }
+
                         await smtpClient.SendMailAsync(mailMessage);
                     }
                 }
             }
             catch (SmtpException smtpEx)
             {
-                // Log ou tratamento específico para erros de SMTP
                 Console.WriteLine($"Erro ao enviar e-mail SMTP: {smtpEx.Message}");
                 throw;
             }
             catch (Exception ex)
             {
-                // Log ou tratamento para outros tipos de erros
                 Console.WriteLine($"Erro ao enviar e-mail: {ex.Message}");
                 throw;
             }
@@ -96,7 +102,6 @@ namespace LigChat.Backend.Web.Controllers
                     ValidAudience = jwtSettings["Audience"]
                 }, out SecurityToken validatedToken);
 
-                // Se o token for válido, extraia o UserId
                 var jwtToken = (JwtSecurityToken)validatedToken;
                 userId = int.Parse(jwtToken.Claims.First(claim => claim.Type == "userId").Value);
 
@@ -122,13 +127,22 @@ namespace LigChat.Backend.Web.Controllers
                 return NotFound("User not found.");
             }
 
-            var verificationCode = GenerateRandomCode(); // Método que gera um código aleatório
+            var verificationCode = GenerateRandomCode();
             if (user.Code == "200")
             {
-                await _userService.SaveVerificationCode(user.Data.Id, verificationCode); // Salvar o código no banco com expiração
+                await _userService.SaveVerificationCode(user.Data.Id, verificationCode);
 
-                // Envia o e-mail com o código de verificação
-                var emailBody = $"Seu código de verificação é: {verificationCode}";
+                // Carregar o template HTML
+                string templatePath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "SendCodeTemplate.html");
+
+                string emailBody = await System.IO.File.ReadAllTextAsync(templatePath);
+
+                // Substituir o código de verificação no template
+                emailBody = emailBody.Replace("{{codigo_verificacao}}", verificationCode);
+                // Aqui você pode definir o caminho da logo que será incluída no email
+                string logoPath = "cid:logo"; // Isso será usado para referenciar a logo no email
+
+                // Enviar o e-mail com o template
                 await SendEmailAsync(request.Email, "Código de Verificação", emailBody);
 
                 return Ok(new { Message = "Verification code sent." });
@@ -145,21 +159,19 @@ namespace LigChat.Backend.Web.Controllers
                 return BadRequest("Invalid request.");
             }
 
-            var isValid = await _userService.ValidateVerificationCode(request.Email, request.Code); // Valida o código
+            var isValid = await _userService.ValidateVerificationCode(request.Email, request.Code);
             if (!isValid)
             {
                 return Unauthorized("Invalid verification code.");
             }
 
             var user = _userService.GetByEmail(request.Email);
-
             var token = _jwtTokenService.GenerateToken(user.Data.Id.ToString(), request.Email);
             return Ok(new { Token = token });
         }
 
         private string GenerateRandomCode()
         {
-            // Gera um código aleatório, por exemplo, um código de 6 dígitos
             Random random = new Random();
             return random.Next(100000, 999999).ToString();
         }
@@ -177,16 +189,13 @@ namespace LigChat.Backend.Web.Controllers
 
     public class VerifyCodeRequestDTO
     {
-
         public string Email { get; set; }
         public string Code { get; set; }
     }
 
     public class VerifyCodeResponseDTO
     {
-
         public int UserId { get; set; }
-
         public string Email { get; set; }
         public string Code { get; set; }
     }

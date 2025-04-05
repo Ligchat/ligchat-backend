@@ -6,7 +6,7 @@ namespace LigChat.Backend.Application.Interface.UserInterface
     public interface IUserControllerInterface
     {
         // Retorna todos os usuários. Deve retornar um IActionResult que pode incluir um status code e os dados dos usuários.
-        IActionResult GetAll();
+        IActionResult GetAll(int? invitedBy);
 
         // Retorna um usuário específico baseado no ID. Deve retornar um IActionResult com o status e os dados do usuário.
         IActionResult GetById(int id);

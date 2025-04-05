@@ -1,4 +1,5 @@
-﻿using System.Text.Json.Serialization;
+﻿using System;
+using System.Text.Json.Serialization;
 
 namespace LigChat.Backend.Domain.DTOs.SectorDto
 {
@@ -18,11 +19,6 @@ namespace LigChat.Backend.Domain.DTOs.SectorDto
         public string? Description { get; set; }
 
         /// <summary>
-        /// Identificador do usuário responsável pelo setor. Este campo é opcional.
-        /// </summary>
-        public int? UserBusinessId { get; set; }
-
-        /// <summary>
         /// Número de telefone associado ao setor. Este campo é opcional.
         /// </summary>
         public string? PhoneNumberId { get; set; }
@@ -38,29 +34,56 @@ namespace LigChat.Backend.Domain.DTOs.SectorDto
         public bool? Status { get; set; }
 
         /// <summary>
+        /// Client ID do Google para integrações de API. Este campo é opcional.
+        /// </summary>
+        public string? GoogleClientId { get; set; }
+
+        /// <summary>
+        /// API Key do Google para integrações de API. Este campo é opcional.
+        /// </summary>
+        public string? GoogleApiKey { get; set; }
+
+        /// <summary>
+        /// Token de acesso OAuth2. Este campo é opcional.
+        /// </summary>
+        public string? OAuth2AccessToken { get; set; }
+
+        /// <summary>
+        /// Refresh token OAuth2. Este campo é opcional.
+        /// </summary>
+        public string? OAuth2RefreshToken { get; set; }
+
+        /// <summary>
+        /// Data de expiração do token OAuth2. Este campo é opcional.
+        /// </summary>
+        public DateTime? OAuth2TokenExpiration { get; set; }
+
+        /// <summary>
         /// Construtor para inicializar o DTO com valores específicos.
         /// </summary>
-        /// <param name="name">Nome do setor.</param>
-        /// <param name="description">Descrição do setor.</param>
-        /// <param name="userBusinessId">Identificador do usuário responsável pelo setor.</param>
-        /// <param name="phoneNumberId">Número de telefone associado ao setor.</param>
-        /// <param name="accessToken">Token de acesso para o setor.</param>
-        /// <param name="status">Status do setor.</param>
         [JsonConstructor]
         public UpdateSectorRequestDTO(
             string? name = null,
             string? description = null,
-            int? userBusinessId = null,
             string? phoneNumberId = null,
             string? accessToken = null,
-            bool? status = null) // Adicionado o novo parâmetro com valor padrão
+            bool? status = null,
+            string? googleClientId = null,
+            string? googleApiKey = null,
+            string? oauth2AccessToken = null,
+            string? oauth2RefreshToken = null,
+            DateTime? oauth2TokenExpiration = null)
         {
             Name = name;
             Description = description;
-            UserBusinessId = userBusinessId;
-            PhoneNumberId = phoneNumberId; // Inicializando o novo campo
-            AccessToken = accessToken; // Inicializando o novo campo
-            Status = status; // Inicializando o novo campo
+            PhoneNumberId = phoneNumberId;
+            AccessToken = accessToken;
+            Status = status;
+            GoogleClientId = googleClientId;
+            GoogleApiKey = googleApiKey;
+            OAuth2AccessToken = oauth2AccessToken;
+            OAuth2RefreshToken = oauth2RefreshToken;
+            OAuth2TokenExpiration = oauth2TokenExpiration;
         }
     }
 }

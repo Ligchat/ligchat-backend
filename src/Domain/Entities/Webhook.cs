@@ -1,3 +1,4 @@
+using System;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using LigChat.Backend.Domain.Entities.Interfaces;
@@ -9,7 +10,7 @@ namespace LigChat.Backend.Domain.Entities
     /// Mapeia a tabela "webhooks" no banco de dados e herda de BaseEntity.
     /// </summary>
     [Table("webhooks")]
-    public class Webhook : IWebhookEntityInterface
+    public class Webhook
     {
         /// <summary>
         /// Identificador único do webhook.
@@ -29,30 +30,13 @@ namespace LigChat.Backend.Domain.Entities
         public string Name { get; set; }
 
         /// <summary>
-        /// Chave de token para autenticação.
-        /// Usada para validar solicitações recebidas no webhook.
-        /// </summary>
-        [Column("token_key")]
-        [Required]
-        [MaxLength(255)] // Limita o comprimento da chave a 255 caracteres
-        public string TokenKey { get; set; }
-
-        /// <summary>
         /// URL do webhook.
         /// Endereço para o qual as solicitações de webhook serão enviadas.
         /// </summary>
-        [Column("url")]
+        [Column("callback_url")]
         [Required]
         [MaxLength(2048)] // Limita o comprimento da URL a 2048 caracteres
-        public string Url { get; set; }
-
-        /// <summary>
-        /// Status da transição de fluxo.
-        /// Este campo é obrigatório e pode representar diferentes estados como Ativa ou Inativa.
-        /// </summary>
-        [Column("status")]
-        [Required]
-        public bool Status { get; set; } = true; // Inicializa o status como verdadeiro
+        public string CallbackUrl { get; set; }
 
         /// <summary>
         /// Identificador do setor associado ao webhook.
@@ -88,14 +72,13 @@ namespace LigChat.Backend.Domain.Entities
         /// Construtor da classe Webhook que inicializa a entidade com valores específicos.
         /// </summary>
         /// <param name="name">Nome do webhook.</param>
-        /// <param name="tokenKey">Chave de token para autenticação.</param>
-        /// <param name="url">URL do webhook.</param>
-        public Webhook(string name, string tokenKey, string url)
+        /// <param name="callbackUrl">URL do webhook.</param>
+        /// <param name="sectorId">Identificador do setor associado ao webhook.</param>
+        public Webhook(string name, string callbackUrl, int? sectorId = null)
         {
             Name = name ?? throw new ArgumentNullException(nameof(name));
-            TokenKey = tokenKey ?? throw new ArgumentNullException(nameof(tokenKey));
-            Url = url ?? throw new ArgumentNullException(nameof(url));
-            Status = true; // Inicializa o status como verdadeiro
+            CallbackUrl = callbackUrl ?? throw new ArgumentNullException(nameof(callbackUrl));
+            SectorId = sectorId; // Inicializa o SectorId com o valor fornecido ou null
             CreatedAt = DateTime.UtcNow; // Inicializa CreatedAt com a data e hora atuais em UTC
             UpdatedAt = DateTime.UtcNow; // Inicializa UpdatedAt com a data e hora atuais em UTC
         }

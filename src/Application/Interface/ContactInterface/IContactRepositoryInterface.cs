@@ -1,4 +1,5 @@
 using LigChat.Backend.Domain.Entities;
+using System.Collections.Generic;
 
 namespace LigChat.Backend.Application.Interface.ContactInterface
 {

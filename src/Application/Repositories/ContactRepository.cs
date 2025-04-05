@@ -1,6 +1,7 @@
 using LigChat.Backend.Application.Interface.ContactInterface;
 using LigChat.Backend.Domain.Entities;
 using LigChat.Backend.Web.Extensions.Database;
+using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -48,24 +49,26 @@ namespace LigChat.Backend.Application.Repositories
 
             var existingContact = _context.Contacts.Find(id);
 
-            if (existingContact != null)
-            {
-                // Atualiza as propriedades do contato existente
-                existingContact.Name = contact.Name;
-                existingContact.TagId = contact.TagId;
-                existingContact.Number = contact.Number;
-                existingContact.Email = contact.Email;
-                existingContact.Notes = contact.Notes;
-                existingContact.Status = contact.Status;
-                existingContact.SectorId = contact.SectorId;
-                existingContact.ProfilePicUrl = contact.ProfilePicUrl; // Incluído
-                existingContact.UpdatedAt = DateTime.UtcNow; // Atualiza a data de atualização
+            if (existingContact == null)
+                throw new ArgumentException($"Contact with ID {id} not found.");
 
-                _context.SaveChanges(); // Salva as alterações no banco de dados
-                return existingContact; // Retorna o contato atualizado
-            }
+            // Atualiza as propriedades do contato existente
+            existingContact.Name = contact.Name;
+            existingContact.TagId = contact.TagId;
+            existingContact.Number = contact.Number;
+            existingContact.Email = contact.Email;
+            existingContact.Notes = contact.Notes;
+            existingContact.IsActive = contact.IsActive;
+            existingContact.Priority = contact.Priority;
+            existingContact.ContactStatus = contact.ContactStatus;
+            existingContact.AssignedTo = contact.AssignedTo;
+            existingContact.SectorId = contact.SectorId;
+            existingContact.AvatarUrl = contact.AvatarUrl;
+            existingContact.AiActive = contact.AiActive;
+            existingContact.UpdatedAt = DateTime.UtcNow; // Atualiza a data de atualização
 
-            throw new ArgumentException("Contact not found."); // Lança uma exceção se o contato não for encontrado
+            _context.SaveChanges(); // Salva as alterações no banco de dados
+            return existingContact; // Retorna o contato atualizado
         }
 
         /// <summary>
@@ -77,14 +80,12 @@ namespace LigChat.Backend.Application.Repositories
         {
             var contact = _context.Contacts.Find(id);
 
-            if (contact != null)
-            {
-                _context.Contacts.Remove(contact); // Remove o contato do DbSet
-                _context.SaveChanges(); // Salva as alterações no banco de dados
-                return contact; // Retorna o contato deletado
-            }
+            if (contact == null)
+                throw new ArgumentException($"Contact with ID {id} not found.");
 
-            throw new ArgumentException("Contact not found."); // Lança uma exceção se o contato não for encontrado
+            _context.Contacts.Remove(contact); // Remove o contato do DbSet
+            _context.SaveChanges(); // Salva as alterações no banco de dados
+            return contact; // Retorna o contato deletado
         }
 
         /// <summary>
@@ -94,7 +95,11 @@ namespace LigChat.Backend.Application.Repositories
         /// <returns>O contato com o ID especificado ou null se não encontrado.</returns>
         public Contact? GetById(int id)
         {
-            return _context.Contacts.Find(id);
+            var contact = _context.Contacts
+                .AsNoTracking()
+                .FirstOrDefault(c => c.Id == id);
+
+            return contact != null ? MapContact(contact) : null;
         }
 
         /// <summary>
@@ -103,7 +108,10 @@ namespace LigChat.Backend.Application.Repositories
         /// <returns>Uma coleção de todos os contatos.</returns>
         public IEnumerable<Contact> GetAll()
         {
-            return _context.Contacts.ToList();
+            return _context.Contacts
+                .AsNoTracking()
+                .Select(MapContact)
+                .ToList();
         }
 
         /// <summary>
@@ -113,7 +121,11 @@ namespace LigChat.Backend.Application.Repositories
         /// <returns>Uma coleção de contatos com a etiqueta especificada.</returns>
         public IEnumerable<Contact> GetByTagId(int tagId)
         {
-            return _context.Contacts.Where(c => c.TagId == tagId).ToList();
+            return _context.Contacts
+                .Where(c => c.TagId == tagId)
+                .AsNoTracking()
+                .Select(MapContact)
+                .ToList();
         }
 
         /// <summary>
@@ -123,7 +135,68 @@ namespace LigChat.Backend.Application.Repositories
         /// <returns>Uma coleção de contatos com o setor especificado.</returns>
         public IEnumerable<Contact> GetBySectorId(int sectorId)
         {
-            return _context.Contacts.Where(c => c.SectorId == sectorId).ToList();
+            try
+            {
+                Console.WriteLine($"Iniciando GetBySectorId com sectorId: {sectorId}");
+
+                var query = _context.Contacts
+                    .IgnoreAutoIncludes()
+                    .Where(c => c.SectorId == sectorId)
+                    .AsNoTracking();
+
+                // Log da query SQL
+                var sql = query.ToQueryString();
+                Console.WriteLine($"Query SQL gerada: {sql}");
+
+                // Log dos parâmetros da query
+                Console.WriteLine("Parâmetros da query:");
+                foreach (var parameter in _context.Database.GetDbConnection().ConnectionString.Split(';'))
+                {
+                    Console.WriteLine(parameter);
+                }
+
+                try
+                {
+                    var result = query.Select(MapContact).ToList();
+                    Console.WriteLine($"Query executada com sucesso. Número de registros: {result.Count}");
+                    
+                    // Log detalhado dos resultados
+                    foreach (var contact in result)
+                    {
+                        Console.WriteLine($"Contact: Id={contact.Id}, Name={contact.Name}, SectorId={contact.SectorId}, TagId={contact.TagId}, AiActive={contact.AiActive}");
+                    }
+
+                    return result;
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine("Erro ao executar a query:");
+                    Console.WriteLine($"Tipo de exceção: {ex.GetType().FullName}");
+                    Console.WriteLine($"Mensagem: {ex.Message}");
+                    Console.WriteLine($"StackTrace: {ex.StackTrace}");
+
+                    if (ex.InnerException != null)
+                    {
+                        Console.WriteLine("Inner Exception:");
+                        Console.WriteLine($"Tipo: {ex.InnerException.GetType().FullName}");
+                        Console.WriteLine($"Mensagem: {ex.InnerException.Message}");
+                        Console.WriteLine($"StackTrace: {ex.InnerException.StackTrace}");
+                    }
+
+                    throw;
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Erro geral em GetBySectorId: {ex.Message}");
+                Console.WriteLine($"StackTrace: {ex.StackTrace}");
+                if (ex.InnerException != null)
+                {
+                    Console.WriteLine($"Inner Exception: {ex.InnerException.Message}");
+                    Console.WriteLine($"Inner StackTrace: {ex.InnerException.StackTrace}");
+                }
+                throw;
+            }
         }
 
         /// <summary>
@@ -134,7 +207,11 @@ namespace LigChat.Backend.Application.Repositories
         public IEnumerable<Contact> GetByName(string name)
         {
             if (string.IsNullOrWhiteSpace(name)) throw new ArgumentException("Name cannot be null or whitespace.", nameof(name)); // Garante que o nome não seja nulo ou em branco
-            return _context.Contacts.Where(c => c.Name.Contains(name)).ToList();
+            return _context.Contacts
+                .Where(c => c.Name.Contains(name))
+                .AsNoTracking()
+                .Select(MapContact)
+                .ToList();
         }
 
         /// <summary>
@@ -145,7 +222,11 @@ namespace LigChat.Backend.Application.Repositories
         public Contact? GetByPhoneWhatsapp(string phoneWhatsapp)
         {
             if (string.IsNullOrWhiteSpace(phoneWhatsapp)) throw new ArgumentException("Phone/WhatsApp cannot be null or whitespace.", nameof(phoneWhatsapp)); // Garante que o número não seja nulo ou em branco
-            return _context.Contacts.FirstOrDefault(c => c.Number == phoneWhatsapp);
+            return _context.Contacts
+                .Where(c => c.Number == phoneWhatsapp)
+                .AsNoTracking()
+                .Select(MapContact)
+                .FirstOrDefault();
         }
 
         /// <summary>
@@ -154,6 +235,28 @@ namespace LigChat.Backend.Application.Repositories
         public void Dispose()
         {
             _context.Dispose(); // Libera os recursos do contexto do banco de dados
+        }
+
+        private Contact MapContact(Contact c)
+        {
+            return new Contact
+            {
+                Id = c.Id,
+                Name = c.Name,
+                Number = c.Number,
+                AvatarUrl = c.AvatarUrl,
+                Email = c.Email,
+                Notes = c.Notes,
+                IsActive = c.IsActive,
+                Priority = c.Priority,
+                ContactStatus = c.ContactStatus,
+                AssignedTo = c.AssignedTo,
+                TagId = c.TagId,
+                SectorId = c.SectorId,
+                AiActive = c.AiActive,
+                CreatedAt = c.CreatedAt,
+                UpdatedAt = c.UpdatedAt
+            };
         }
     }
 }
