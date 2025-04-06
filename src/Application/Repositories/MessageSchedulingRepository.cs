@@ -29,11 +29,13 @@ namespace LigChat.Data.Repositories
 
             if (existingMessageScheduling != null)
             {
+                existingMessageScheduling.Name = messageScheduling.Name;
                 existingMessageScheduling.MessageText = messageScheduling.MessageText;
-                existingMessageScheduling.FlowId = messageScheduling.FlowId;
-                existingMessageScheduling.SectorId = messageScheduling.SectorId;
                 existingMessageScheduling.SendDate = messageScheduling.SendDate;
-                existingMessageScheduling.Tags = messageScheduling.Tags;
+                existingMessageScheduling.ContactId = messageScheduling.ContactId;
+                existingMessageScheduling.SectorId = messageScheduling.SectorId;
+                existingMessageScheduling.Status = messageScheduling.Status;
+                existingMessageScheduling.TagIds = messageScheduling.TagIds;
                 existingMessageScheduling.UpdatedAt = DateTime.UtcNow;
 
                 _context.SaveChanges();
