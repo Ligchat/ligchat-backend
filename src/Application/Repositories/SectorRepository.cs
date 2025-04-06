@@ -13,6 +13,11 @@ namespace LigChat.Data.Repositories
             _context = context;
         }
 
+        public bool ExistsByPhoneNumberId(string phoneNumberId)
+        {
+            return _context.Sectors.Any(s => s.PhoneNumberId == phoneNumberId);
+        }
+
         public Sector Save(Sector sector)
         {
             _context.Sectors.Add(sector);
@@ -21,11 +26,9 @@ namespace LigChat.Data.Repositories
         }
 
         public IEnumerable<Sector> GetByIds(IEnumerable<int> sectorIds)
-{
-    return _context.Set<Sector>().Where(s => sectorIds.Contains(s.Id)).ToList();
-}
-
-
+        {
+            return _context.Set<Sector>().Where(s => sectorIds.Contains(s.Id)).ToList();
+        }
 
         public Sector Update(int id, Sector sector)
         {

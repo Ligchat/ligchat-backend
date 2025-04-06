@@ -19,8 +19,10 @@ namespace LigChat.Data.Interfaces.IRepositories
         // Atualiza um setor existente pelo ID. Retorna o setor atualizado.
         Sector Update(int id, Sector sector);
 
-
         // Deleta um setor pelo ID. Retorna o setor deletado.
         Sector Delete(int id);
+
+        // Verifica se já existe um setor com o número de telefone especificado
+        bool ExistsByPhoneNumberId(string phoneNumberId);
     }
 }

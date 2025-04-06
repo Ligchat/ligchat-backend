@@ -89,6 +89,11 @@ namespace LigChat.Api.Services.SectorService
                 return new SingleSectorResponse("Invalid request: Name is required.", "400", null);
             }
 
+            if (!string.IsNullOrWhiteSpace(sectorDto.PhoneNumberId) && _sectorRepository.ExistsByPhoneNumberId(sectorDto.PhoneNumberId))
+            {
+                return new SingleSectorResponse("Invalid request: Phone number ID is already in use.", "400", null);
+            }
+
             var sector = new Sector
             {
                 Name = sectorDto.Name,
@@ -141,7 +146,13 @@ namespace LigChat.Api.Services.SectorService
                 return new SingleSectorResponse("Sector not found", "404", null);
             }
 
-            // Atualizando propriedades se fornecidas
+            if (!string.IsNullOrWhiteSpace(sectorDto.PhoneNumberId) && 
+                sectorDto.PhoneNumberId != existingSector.PhoneNumberId && 
+                _sectorRepository.ExistsByPhoneNumberId(sectorDto.PhoneNumberId))
+            {
+                return new SingleSectorResponse("Invalid request: Phone number ID is already in use.", "400", null);
+            }
+
             if (!string.IsNullOrWhiteSpace(sectorDto.Name))
                 existingSector.Name = sectorDto.Name;
 
