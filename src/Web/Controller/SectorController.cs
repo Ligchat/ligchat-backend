@@ -77,9 +77,9 @@ namespace LigChat.Api.Controllers
 
             var createdSectorResponse = _sectorService.Save(sectorDto);
 
-            if (createdSectorResponse == null)
+            if (createdSectorResponse == null || createdSectorResponse.Code == "400")
             {
-                return BadRequest(new SingleSectorResponse
+                return BadRequest(createdSectorResponse ?? new SingleSectorResponse
                 {
                     Message = "Sector could not be created.",
                     Code = "400",
@@ -115,9 +115,9 @@ namespace LigChat.Api.Controllers
             }
 
             var updatedSectorResponse = _sectorService.Update(id, sectorDto);
-            if (updatedSectorResponse == null)
+            if (updatedSectorResponse == null || updatedSectorResponse.Code == "400")
             {
-                return BadRequest(new SingleSectorResponse
+                return BadRequest(updatedSectorResponse ?? new SingleSectorResponse
                 {
                     Message = "Sector could not be updated.",
                     Code = "400",
@@ -125,7 +125,12 @@ namespace LigChat.Api.Controllers
                 });
             }
 
-            return NoContent();
+            if (updatedSectorResponse.Code == "404")
+            {
+                return NotFound(updatedSectorResponse);
+            }
+
+            return Ok(updatedSectorResponse);
         }
 
         [HttpDelete("{id}")]
