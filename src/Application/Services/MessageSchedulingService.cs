@@ -24,17 +24,12 @@ namespace LigChat.Api.Services.MessageSchedulingService
                 ms.Name,
                 ms.MessageText,
                 ms.SendDate,
-                ms.FlowId,
+                ms.ContactId,
                 ms.SectorId,
-                ms.Tags,
+                ms.Status,
+                ms.TagIds,
                 ms.CreatedAt,
-                ms.UpdatedAt,
-                ms.ImageName,
-                ms.FileName,
-                ms.ImageAttachment,
-                ms.FileAttachment,
-                ms.ImageMimeType,
-                ms.FileMimeType
+                ms.UpdatedAt
             )).ToList();
             return new MessageSchedulingListResponse("Success", "200", messageSchedulingDtos);
         }
@@ -51,46 +46,34 @@ namespace LigChat.Api.Services.MessageSchedulingService
                 messageScheduling.Name,
                 messageScheduling.MessageText,
                 messageScheduling.SendDate,
-                messageScheduling.FlowId,
+                messageScheduling.ContactId,
                 messageScheduling.SectorId,
-                messageScheduling.Tags,
+                messageScheduling.Status,
+                messageScheduling.TagIds,
                 messageScheduling.CreatedAt,
-                messageScheduling.UpdatedAt,
-                messageScheduling.ImageName,
-                messageScheduling.FileName,
-                messageScheduling.ImageAttachment,
-                messageScheduling.FileAttachment,
-                messageScheduling.ImageMimeType,
-                messageScheduling.FileMimeType
+                messageScheduling.UpdatedAt
             );
             return new SingleMessageSchedulingResponse("Success", "200", messageSchedulingDto);
         }
 
         public SingleMessageSchedulingResponse Save(CreateMessageSchedulingRequestDTO messageSchedulingDto)
         {
-            // Validação manual
             if (string.IsNullOrWhiteSpace(messageSchedulingDto.Name))
             {
                 return new SingleMessageSchedulingResponse("Invalid request: Name is required", "400", null);
             }
 
-            // Criação do objeto MessageScheduling
             var messageScheduling = new MessageScheduling
             {
                 Name = messageSchedulingDto.Name,
                 MessageText = messageSchedulingDto.MessageText,
-                FlowId = messageSchedulingDto.FlowId,
-                SectorId = messageSchedulingDto.SectorId,
                 SendDate = messageSchedulingDto.SendDate,
-                Tags = messageSchedulingDto.TagIds,
+                ContactId = messageSchedulingDto.ContactId,
+                SectorId = messageSchedulingDto.SectorId,
+                Status = messageSchedulingDto.Status,
+                TagIds = messageSchedulingDto.TagIds,
                 CreatedAt = DateTime.UtcNow,
-                UpdatedAt = DateTime.UtcNow,
-                ImageName = messageSchedulingDto.ImageName,
-                FileName = messageSchedulingDto.FileName,
-                ImageAttachment = messageSchedulingDto.ImageAttachment,
-                FileAttachment = messageSchedulingDto.FileAttachment,
-                ImageMimeType = messageSchedulingDto.ImageMimeType,
-                FileMimeType = messageSchedulingDto.FileMimeType
+                UpdatedAt = DateTime.UtcNow
             };
 
             var savedMessageScheduling = _messageSchedulingRepository.Save(messageScheduling);
@@ -99,17 +82,12 @@ namespace LigChat.Api.Services.MessageSchedulingService
                 savedMessageScheduling.Name,
                 savedMessageScheduling.MessageText,
                 savedMessageScheduling.SendDate,
-                savedMessageScheduling.FlowId,
+                savedMessageScheduling.ContactId,
                 savedMessageScheduling.SectorId,
-                savedMessageScheduling.Tags,
+                savedMessageScheduling.Status,
+                savedMessageScheduling.TagIds,
                 savedMessageScheduling.CreatedAt,
-                savedMessageScheduling.UpdatedAt,
-                savedMessageScheduling.ImageName,
-                savedMessageScheduling.FileName,
-                savedMessageScheduling.ImageAttachment,
-                savedMessageScheduling.FileAttachment,
-                savedMessageScheduling.ImageMimeType,
-                savedMessageScheduling.FileMimeType
+                savedMessageScheduling.UpdatedAt
             );
             return new SingleMessageSchedulingResponse("Message Scheduling created successfully", "201", responseDto);
         }
@@ -122,7 +100,6 @@ namespace LigChat.Api.Services.MessageSchedulingService
                 return new SingleMessageSchedulingResponse("Message Scheduling not found", "404", null);
             }
 
-            // Atualiza os campos opcionais, se fornecidos.
             if (messageSchedulingDto.Name != null)
                 existingMessageScheduling.Name = messageSchedulingDto.Name;
 
@@ -132,32 +109,17 @@ namespace LigChat.Api.Services.MessageSchedulingService
             if (!string.IsNullOrEmpty(messageSchedulingDto.SendDate))
                 existingMessageScheduling.SendDate = messageSchedulingDto.SendDate;
 
-            if (messageSchedulingDto.FlowId != null)
-                existingMessageScheduling.FlowId = messageSchedulingDto.FlowId;
+            if (messageSchedulingDto.ContactId.HasValue)
+                existingMessageScheduling.ContactId = messageSchedulingDto.ContactId.Value;
 
             if (messageSchedulingDto.SectorId.HasValue)
-                existingMessageScheduling.SectorId = messageSchedulingDto.SectorId;
+                existingMessageScheduling.SectorId = messageSchedulingDto.SectorId.Value;
+
+            if (messageSchedulingDto.Status.HasValue)
+                existingMessageScheduling.Status = messageSchedulingDto.Status.Value;
 
             if (messageSchedulingDto.TagIds != null)
-                existingMessageScheduling.Tags = messageSchedulingDto.TagIds;
-
-            if (messageSchedulingDto.ImageName != null)
-                existingMessageScheduling.ImageName = messageSchedulingDto.ImageName;
-
-            if (messageSchedulingDto.FileName != null)
-                existingMessageScheduling.FileName = messageSchedulingDto.FileName;
-
-            if (messageSchedulingDto.ImageAttachment != null)
-                existingMessageScheduling.ImageAttachment = messageSchedulingDto.ImageAttachment;
-
-            if (messageSchedulingDto.FileAttachment != null)
-                existingMessageScheduling.FileAttachment = messageSchedulingDto.FileAttachment;
-
-            if (messageSchedulingDto.ImageMimeType != null)
-                existingMessageScheduling.ImageMimeType = messageSchedulingDto.ImageMimeType;
-
-            if (messageSchedulingDto.FileMimeType != null)
-                existingMessageScheduling.FileMimeType = messageSchedulingDto.FileMimeType;
+                existingMessageScheduling.TagIds = messageSchedulingDto.TagIds;
 
             existingMessageScheduling.UpdatedAt = DateTime.UtcNow;
 
@@ -167,17 +129,12 @@ namespace LigChat.Api.Services.MessageSchedulingService
                 savedMessageScheduling.Name,
                 savedMessageScheduling.MessageText,
                 savedMessageScheduling.SendDate,
-                savedMessageScheduling.FlowId,
+                savedMessageScheduling.ContactId,
                 savedMessageScheduling.SectorId,
-                savedMessageScheduling.Tags,
+                savedMessageScheduling.Status,
+                savedMessageScheduling.TagIds,
                 savedMessageScheduling.CreatedAt,
-                savedMessageScheduling.UpdatedAt,
-                savedMessageScheduling.ImageName,
-                savedMessageScheduling.FileName,
-                savedMessageScheduling.ImageAttachment,
-                savedMessageScheduling.FileAttachment,
-                savedMessageScheduling.ImageMimeType,
-                savedMessageScheduling.FileMimeType
+                savedMessageScheduling.UpdatedAt
             );
             return new SingleMessageSchedulingResponse("Message Scheduling updated successfully", "200", responseDto);
         }
@@ -194,17 +151,12 @@ namespace LigChat.Api.Services.MessageSchedulingService
                 deletedMessageScheduling.Name,
                 deletedMessageScheduling.MessageText,
                 deletedMessageScheduling.SendDate,
-                deletedMessageScheduling.FlowId,
+                deletedMessageScheduling.ContactId,
                 deletedMessageScheduling.SectorId,
-                deletedMessageScheduling.Tags,
+                deletedMessageScheduling.Status,
+                deletedMessageScheduling.TagIds,
                 deletedMessageScheduling.CreatedAt,
-                deletedMessageScheduling.UpdatedAt,
-                deletedMessageScheduling.ImageName,
-                deletedMessageScheduling.FileName,
-                deletedMessageScheduling.ImageAttachment,
-                deletedMessageScheduling.FileAttachment,
-                deletedMessageScheduling.ImageMimeType,
-                deletedMessageScheduling.FileMimeType
+                deletedMessageScheduling.UpdatedAt
             );
             return new SingleMessageSchedulingResponse("Message Scheduling deleted successfully", "200", responseDto);
         }
