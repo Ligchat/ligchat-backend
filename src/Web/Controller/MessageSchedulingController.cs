@@ -18,14 +18,24 @@ namespace LigChat.Api.Controllers
         }
 
         [HttpGet]
-        public IActionResult GetAll(int sectorId)
+        public IActionResult GetAll([FromQuery] int sectorId)
         {
+            if (sectorId <= 0)
+            {
+                return BadRequest(new MessageSchedulingListResponse
+                {
+                    Message = "Invalid sector ID.",
+                    Code = "400",
+                    Data = new List<MessageSchedulingViewModel>()
+                });
+            }
+
             var messageSchedulingListResponse = _messageSchedulingService.GetAll(sectorId);
             if (messageSchedulingListResponse == null || !messageSchedulingListResponse.Data.Any())
             {
                 return NotFound(new MessageSchedulingListResponse
                 {
-                    Message = "No message schedulings found.",
+                    Message = "No message schedulings found for this sector.",
                     Code = "404",
                     Data = new List<MessageSchedulingViewModel>()
                 });

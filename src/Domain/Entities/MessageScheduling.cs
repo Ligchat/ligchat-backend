@@ -1,8 +1,6 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
-using LigChat.Backend.Domain.Entities.Interfaces;
 
 namespace LigChat.Backend.Domain.Entities
 {
@@ -18,16 +16,26 @@ namespace LigChat.Backend.Domain.Entities
         public string Name { get; set; }
 
         [Column("mensagem_de_texto")]
-        public string? MessageText { get; set; }
+        [Required]
+        public string MessageText { get; set; }
 
         [Column("data_envio")]
-        public string? SendDate { get; set; }
+        [Required]
+        public string SendDate { get; set; }
 
-        [Column("id_fluxo")]
-        public string? FlowId { get; set; }
+        [Column("contato_id")]
+        [Required]
+        public int ContactId { get; set; }
 
         [Column("setor_id")]
-        public int? SectorId { get; set; }
+        [Required]
+        public int SectorId { get; set; }
+
+        [Column("status")]
+        public bool Status { get; set; } = true;
+
+        [Column("tag_id")]
+        public string TagIds { get; set; }
 
         [Column("data_criacao")]
         public DateTime CreatedAt { get; set; }
@@ -35,41 +43,32 @@ namespace LigChat.Backend.Domain.Entities
         [Column("data_atualizacao")]
         public DateTime UpdatedAt { get; set; }
 
-        [Column("nome_imagem")]
-        public string? ImageName { get; set; }
-
-        [Column("nome_arquivo")]
-        public string? FileName { get; set; }
-
-        [Column("imagem_anexo")]
-        public string? ImageAttachment { get; set; }
-
-        [Column("arquivo_anexo")]
-        public string? FileAttachment { get; set; }
-
-        [Column("imagem_mimetype")]
-        public string? ImageMimeType { get; set; }
-
-        [Column("arquivo_mimetype")]
-        public string? FileMimeType { get; set; }
-
-        [Column("tag_id")]
-        public string? Tags { get; set; }
-
         public MessageScheduling()
         {
             CreatedAt = DateTime.UtcNow;
             UpdatedAt = DateTime.UtcNow;
             Name = string.Empty;
+            MessageText = string.Empty;
+            SendDate = string.Empty;
+            TagIds = string.Empty;
         }
 
-        public MessageScheduling(string name, string messageText, int userId, string sendDate, string flowId, string status, int? sectorId = null)
+        public MessageScheduling(
+            string name,
+            string messageText,
+            string sendDate,
+            int contactId,
+            int sectorId,
+            bool status = true,
+            string tagIds = "")
         {
-            Name = name ?? throw new ArgumentNullException(nameof(name), "O nome da mensagem não pode ser nulo.");
-            MessageText = messageText;
-            SendDate = sendDate;
-            FlowId = flowId;
+            Name = name ?? throw new ArgumentNullException(nameof(name));
+            MessageText = messageText ?? throw new ArgumentNullException(nameof(messageText));
+            SendDate = sendDate ?? throw new ArgumentNullException(nameof(sendDate));
+            ContactId = contactId;
             SectorId = sectorId;
+            Status = status;
+            TagIds = tagIds;
             CreatedAt = DateTime.UtcNow;
             UpdatedAt = DateTime.UtcNow;
         }

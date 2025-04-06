@@ -24,14 +24,19 @@ namespace LigChat.Backend.Domain.DTOs.MessageSchedulingDto
         public string? SendDate { get; set; }
 
         /// <summary>
-        /// Identificador do fluxo ao qual a mensagem está associada. Este campo é opcional.
+        /// Identificador do contato ao qual a mensagem está associada. Este campo é opcional.
         /// </summary>
-        public string? FlowId { get; set; }
+        public int? ContactId { get; set; }
 
         /// <summary>
         /// Identificador do setor ao qual a mensagem pertence. Este campo é opcional.
         /// </summary>
         public int? SectorId { get; set; }
+
+        /// <summary>
+        /// Status da mensagem. Este campo é opcional.
+        /// </summary>
+        public bool? Status { get; set; }
 
         /// <summary>
         /// Lista de identificadores de tags associadas à mensagem. Este campo é opcional.
@@ -79,8 +84,9 @@ namespace LigChat.Backend.Domain.DTOs.MessageSchedulingDto
         /// <param name="name">Nome da mensagem agendada.</param>
         /// <param name="messageText">Texto da mensagem.</param>
         /// <param name="sendDate">Data de envio da mensagem.</param>
-        /// <param name="flowId">Identificador do fluxo.</param>
+        /// <param name="contactId">Identificador do contato.</param>
         /// <param name="sectorId">Identificador do setor.</param>
+        /// <param name="status">Status da mensagem.</param>
         /// <param name="tagIds">Lista de IDs de tags associadas.</param>
         /// <param name="attachments">Lista de anexos.</param>
         /// <param name="imageName">Nome da imagem associada.</param>
@@ -94,8 +100,9 @@ namespace LigChat.Backend.Domain.DTOs.MessageSchedulingDto
             string? name = null,
             string? messageText = null,
             string? sendDate = null,
-            string? flowId = null,
+            int? contactId = null,
             int? sectorId = null,
+            bool? status = null,
             string? tagIds = null,
             List<AttachmentDTO>? attachments = null,
             string? imageName = null,
@@ -108,8 +115,9 @@ namespace LigChat.Backend.Domain.DTOs.MessageSchedulingDto
             Name = name;
             MessageText = messageText;
             SendDate = sendDate;
-            FlowId = flowId;
+            ContactId = contactId;
             SectorId = sectorId;
+            Status = status;
             TagIds = tagIds;
             Attachments = attachments;
             ImageName = imageName;
@@ -143,8 +151,8 @@ namespace LigChat.Backend.Domain.DTOs.MessageSchedulingDto
         /// <param name="content">Conteúdo do anexo.</param>
         public AttachmentDTO(string type, string content)
         {
-            Type = type ?? throw new ArgumentNullException(nameof(type), "O tipo do anexo não pode ser nulo.");
-            Content = content ?? throw new ArgumentNullException(nameof(content), "O conteúdo do anexo não pode ser nulo.");
+            Type = type ?? throw new ArgumentNullException(nameof(type));
+            Content = content ?? throw new ArgumentNullException(nameof(content));
         }
     }
 }

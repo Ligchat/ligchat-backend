@@ -69,12 +69,13 @@ namespace LigChat.Data.Repositories
 
         public IEnumerable<MessageScheduling> GetAll(int sectorId)
         {
-            // Filtra as mensagens agendadas pelo sectorId
-            return _context.MessageSchedulings
-                           .Where(ms => ms.SectorId == sectorId) // Adiciona a condição de filtro
-                           .ToList();
+            Console.WriteLine($"Buscando mensagens agendadas para o setor {sectorId}");
+            var result = _context.MessageSchedulings
+                               .Where(ms => ms.SectorId == sectorId)
+                               .ToList();
+            Console.WriteLine($"Encontradas {result.Count} mensagens agendadas");
+            return result;
         }
-
 
         public void Dispose()
         {
