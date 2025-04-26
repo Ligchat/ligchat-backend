@@ -1,5 +1,4 @@
 ﻿using LigChat.Backend.Application.Interface.UserInterface;
-using LigChat.Backend.Application.Repositories;
 using LigChat.Backend.Web.Extensions.Cors;
 using LigChat.Backend.Web.Extensions.Database;
 using Microsoft.EntityFrameworkCore;
@@ -13,7 +12,6 @@ using LigChat.Backend.Data.Interfaces.IRepositories;
 using LigChat.Data.Interfaces.IServices;
 using LigChat.Api.Services.TagService;
 using LigChat.Api.Services.FolderService;
-using LigChat.Api.Services.MessageSchedulingService;
 using LigChat.Api.Services.SectorService;
 using LigChat.Api.Services.TeamService;
 using LigChat.Api.Services.FlowService;
@@ -41,6 +39,14 @@ using LigChat.Data.Interfaces.IRepositories;
 using LigChat.Data.Repositories;
 using LigChat.Api.Services;
 using LigChat.Backend.Application.Services;
+using LigChat.Backend.Application.Services.Storage;
+using LigChat.Backend.Application.Repositories;
+using LigChat.Backend.Application.Interface.MessageSchedulingInterface;
+using LigChat.Backend.Application.Interface.S3StorageInterface;
+using LigChat.Backend.Application.Common.Mappings;
+using Amazon.Runtime;
+using Amazon.Extensions.NETCore.Setup;
+using Amazon;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -100,6 +106,9 @@ builder.Services.AddScoped<JwtTokenService>();
 builder.Services.AddDbContext<DatabaseConfiguration>(options =>
     options.UseMySql(builder.Configuration.GetConnectionString("DefaultConnection"), new MySqlServerVersion(new Version(8, 0, 23))));
 
+// Configuração do AWS S3
+builder.Services.AddScoped<IS3StorageService, S3StorageService>();
+
 var mongoConnectionString = builder.Configuration.GetConnectionString("MongoDbConnection");
 var mongoDatabaseName = builder.Configuration["MongoDbSettings:DatabaseName"];
 
@@ -149,8 +158,12 @@ builder.Services.AddScoped<ICardService, CardService>();
 builder.Services.AddScoped<BusinessDayService>();
 builder.Services.AddScoped<FlowWhatsappService>();
 builder.Services.AddScoped<VariablesService>();
+builder.Services.AddScoped<IS3StorageService, S3StorageService>();
 
 builder.Services.AddHttpClient();
+
+// Configurar AutoMapper
+builder.Services.AddAutoMapper(typeof(MessageSchedulingProfile));
 
 var app = builder.Build();
 

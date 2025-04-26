@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 using System.Text.Json.Serialization;
 
 namespace LigChat.Backend.Domain.DTOs.MessageSchedulingDto
@@ -12,37 +13,43 @@ namespace LigChat.Backend.Domain.DTOs.MessageSchedulingDto
         /// <summary>
         /// Nome da mensagem agendada. Este campo é obrigatório.
         /// </summary>
+        [Required]
+        [StringLength(100)]
         public string Name { get; set; }
 
         /// <summary>
         /// Texto da mensagem. Este campo é obrigatório.
         /// </summary>
+        [Required]
         public string MessageText { get; set; }
 
         /// <summary>
         /// Data de envio da mensagem. Este campo é obrigatório.
         /// </summary>
+        [Required]
         public string SendDate { get; set; }
 
         /// <summary>
         /// Identificador do contato ao qual a mensagem está associada. Este campo é obrigatório.
         /// </summary>
+        [Required]
         public int ContactId { get; set; }
 
         /// <summary>
         /// Identificador do setor ao qual a mensagem pertence. Este campo é obrigatório.
         /// </summary>
+        [Required]
         public int SectorId { get; set; }
 
         /// <summary>
         /// Status da mensagem. Este campo é obrigatório.
         /// </summary>
-        public bool Status { get; set; }
+        public bool Status { get; set; } = true;
 
         /// <summary>
         /// Lista de identificadores de tags associadas à mensagem. Este campo é obrigatório.
         /// </summary>
-        public string TagIds { get; set; }
+        public string TagIds { get; set; } = string.Empty;
 
         /// <summary>
         /// Lista de anexos associados à mensagem.
@@ -105,28 +112,16 @@ namespace LigChat.Backend.Domain.DTOs.MessageSchedulingDto
             int sectorId,
             bool status = true,
             string tagIds = "",
-            List<AttachmentDTO>? attachments = null,
-            string? imageName = null,
-            string? fileName = null,
-            string? imageAttachment = null,
-            string? fileAttachment = null,
-            string? imageMimeType = null,
-            string? fileMimeType = null)
+            List<AttachmentDTO>? attachments = null)
         {
             Name = name ?? throw new ArgumentNullException(nameof(name));
             MessageText = messageText ?? throw new ArgumentNullException(nameof(messageText));
-            SendDate = sendDate;
+            SendDate = sendDate ?? throw new ArgumentNullException(nameof(sendDate));
             ContactId = contactId;
             SectorId = sectorId;
             Status = status;
             TagIds = tagIds;
             Attachments = attachments ?? new List<AttachmentDTO>();
-            ImageName = imageName;
-            FileName = fileName;
-            ImageAttachment = imageAttachment;
-            FileAttachment = fileAttachment;
-            ImageMimeType = imageMimeType;
-            FileMimeType = fileMimeType;
         }
     }
 }

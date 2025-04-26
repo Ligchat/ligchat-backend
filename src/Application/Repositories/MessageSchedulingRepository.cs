@@ -1,11 +1,13 @@
-﻿using LigChat.Data.Interfaces.IRepositories;
-using LigChat.Backend.Web.Extensions.Database;
 using LigChat.Backend.Domain.Entities;
+using LigChat.Backend.Web.Extensions.Database;
+using LigChat.Data.Interfaces.IRepositories;
+using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 
-namespace LigChat.Data.Repositories
+namespace LigChat.Backend.Application.Repositories
 {
     public class MessageSchedulingRepository : IMessageSchedulingRepositoryInterface, IDisposable
     {
@@ -13,70 +15,84 @@ namespace LigChat.Data.Repositories
 
         public MessageSchedulingRepository(DatabaseConfiguration context)
         {
-            _context = context;
+            _context = context ?? throw new ArgumentNullException(nameof(context));
         }
 
-        public MessageScheduling Save(MessageScheduling messageScheduling)
+        public async Task<IEnumerable<MessageScheduling>> GetAll(int sectorId)
         {
-            _context.MessageSchedulings.Add(messageScheduling);
-            _context.SaveChanges();
+            return await _context.MessageSchedulings
+                .Include(m => m.Attachments)
+                .Where(m => m.SectorId == sectorId)
+                .AsNoTracking()
+                .ToListAsync();
+        }
+
+        public async Task<MessageScheduling?> GetById(int id)
+        {
+            return await _context.MessageSchedulings
+                .Include(m => m.Attachments)
+                .FirstOrDefaultAsync(m => m.Id == id);
+        }
+
+        public async Task<MessageScheduling> Save(MessageScheduling messageScheduling)
+        {
+            if (messageScheduling == null)
+                throw new ArgumentNullException(nameof(messageScheduling));
+
+            await _context.MessageSchedulings.AddAsync(messageScheduling);
+            await _context.SaveChangesAsync();
             return messageScheduling;
         }
 
-        public MessageScheduling Update(int id, MessageScheduling messageScheduling)
+        public async Task<MessageScheduling> Update(MessageScheduling messageScheduling)
         {
-            var existingMessageScheduling = _context.MessageSchedulings.Find(id);
+            if (messageScheduling == null)
+                throw new ArgumentNullException(nameof(messageScheduling));
 
-            if (existingMessageScheduling != null)
+            var existingMessage = await _context.MessageSchedulings
+                .Include(m => m.Attachments)
+                .FirstOrDefaultAsync(m => m.Id == messageScheduling.Id);
+
+            if (existingMessage == null)
+                throw new ArgumentException($"Message with ID {messageScheduling.Id} not found.");
+
+            existingMessage.Name = messageScheduling.Name;
+            existingMessage.MessageText = messageScheduling.MessageText;
+            existingMessage.SendDate = messageScheduling.SendDate;
+            existingMessage.ContactId = messageScheduling.ContactId;
+            existingMessage.SectorId = messageScheduling.SectorId;
+            existingMessage.Status = messageScheduling.Status;
+            existingMessage.TagIds = messageScheduling.TagIds;
+            existingMessage.UpdatedAt = DateTime.UtcNow;
+
+            if (messageScheduling.Attachments != null && messageScheduling.Attachments.Any())
             {
-                existingMessageScheduling.Name = messageScheduling.Name;
-                existingMessageScheduling.MessageText = messageScheduling.MessageText;
-                existingMessageScheduling.SendDate = messageScheduling.SendDate;
-                existingMessageScheduling.ContactId = messageScheduling.ContactId;
-                existingMessageScheduling.SectorId = messageScheduling.SectorId;
-                existingMessageScheduling.Status = messageScheduling.Status;
-                existingMessageScheduling.TagIds = messageScheduling.TagIds;
-                existingMessageScheduling.UpdatedAt = DateTime.UtcNow;
-
-                _context.SaveChanges();
-                return existingMessageScheduling;
+                _context.MessageAttachments.RemoveRange(existingMessage.Attachments);
+                foreach (var attachment in messageScheduling.Attachments)
+                {
+                    attachment.MessageId = existingMessage.Id;
+                    await _context.MessageAttachments.AddAsync(attachment);
+                }
             }
 
-            return null;
+            await _context.SaveChangesAsync();
+            return existingMessage;
         }
 
-        public MessageScheduling Delete(int id)
+        public async Task<MessageScheduling?> Delete(int id)
         {
-            var messageScheduling = _context.MessageSchedulings.Find(id);
+            var messageScheduling = await _context.MessageSchedulings
+                .Include(m => m.Attachments)
+                .FirstOrDefaultAsync(m => m.Id == id);
 
-            if (messageScheduling != null)
-            {
-                _context.MessageSchedulings.Remove(messageScheduling);
-                _context.SaveChanges();
-                return messageScheduling;
-            }
+            if (messageScheduling == null)
+                return null;
 
-            return null;
-        }
+            _context.MessageAttachments.RemoveRange(messageScheduling.Attachments);
+            _context.MessageSchedulings.Remove(messageScheduling);
+            await _context.SaveChangesAsync();
 
-        public MessageScheduling? GetById(int id)
-        {
-            return _context.MessageSchedulings.Find(id);
-        }
-
-        public IEnumerable<MessageScheduling> GetBySendDate(string sendDate)
-        {
-            return _context.MessageSchedulings.Where(ms => ms.SendDate == sendDate).ToList();
-        }
-
-        public IEnumerable<MessageScheduling> GetAll(int sectorId)
-        {
-            Console.WriteLine($"Buscando mensagens agendadas para o setor {sectorId}");
-            var result = _context.MessageSchedulings
-                               .Where(ms => ms.SectorId == sectorId)
-                               .ToList();
-            Console.WriteLine($"Encontradas {result.Count} mensagens agendadas");
-            return result;
+            return messageScheduling;
         }
 
         public void Dispose()
@@ -84,4 +100,4 @@ namespace LigChat.Data.Repositories
             _context.Dispose();
         }
     }
-}
+} 

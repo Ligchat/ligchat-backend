@@ -69,6 +69,11 @@ namespace LigChat.Backend.Domain.DTOs.SectorDto
         public bool IsShared { get; set; } = false;
 
         /// <summary>
+        /// Indica se o setor é oficial. Este campo é opcional.
+        /// </summary>
+        public bool? IsOfficial { get; set; }
+
+        /// <summary>
         /// Identificador original opcional do setor.
         /// </summary>
 
@@ -87,6 +92,7 @@ namespace LigChat.Backend.Domain.DTOs.SectorDto
         /// <param name="oauth2RefreshToken">Refresh token OAuth2.</param>
         /// <param name="oauth2TokenExpiration">Data de expiração do token OAuth2.</param>
         /// <param name="isShared">Indica se o setor é compartilhado.</param>
+        /// <param name="isOfficial">Indica se o setor é oficial.</param>
         [JsonConstructor]
         public CreateSectorRequestDTO(
             string name,
@@ -100,7 +106,8 @@ namespace LigChat.Backend.Domain.DTOs.SectorDto
             string? oauth2AccessToken = null,
             string? oauth2RefreshToken = null,
             DateTime? oauth2TokenExpiration = null,
-            bool isShared = false)
+            bool isShared = false,
+            bool? isOfficial = null)
         {
             Name = name;
             Description = description;
@@ -114,6 +121,7 @@ namespace LigChat.Backend.Domain.DTOs.SectorDto
             OAuth2RefreshToken = oauth2RefreshToken;
             OAuth2TokenExpiration = oauth2TokenExpiration;
             IsShared = isShared;
+            IsOfficial = isOfficial;
         }
     }
 }

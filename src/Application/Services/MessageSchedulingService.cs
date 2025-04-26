@@ -1,164 +1,331 @@
 ﻿using LigChat.Data.Interfaces.IRepositories;
 using LigChat.Data.Interfaces.IServices;
-using LigChat.Backend.Application.Common.Mappings.MessageSchedulingActionResults;
 using LigChat.Backend.Domain.DTOs.MessageSchedulingDto;
 using System.Linq;
 using LigChat.Backend.Domain.Entities;
+using System;
+using System.Threading.Tasks;
+using System.IO;
+using LigChat.Backend.Application.Services.Storage;
+using Microsoft.EntityFrameworkCore;
+using LigChat.Backend.Web.Extensions.Database;
+using System.Collections.Generic;
+using AutoMapper;
+using LigChat.Backend.Application.Common;
+using LigChat.Backend.Domain.ViewModels;
+using LigChat.Backend.Application.Interface.MessageSchedulingInterface;
+using LigChat.Backend.Application.Interface.S3StorageInterface;
 
-namespace LigChat.Api.Services.MessageSchedulingService
+namespace LigChat.Backend.Application.Services
 {
     public class MessageSchedulingService : IMessageSchedulingServiceInterface
     {
-        private readonly IMessageSchedulingRepositoryInterface _messageSchedulingRepository;
+        private readonly IMessageSchedulingRepositoryInterface _repository;
+        private readonly IMapper _mapper;
+        private readonly IS3StorageService _s3Service;
+        private readonly DatabaseConfiguration _context;
 
-        public MessageSchedulingService(IMessageSchedulingRepositoryInterface messageSchedulingRepository)
+        public MessageSchedulingService(
+            IMessageSchedulingRepositoryInterface repository,
+            IMapper mapper,
+            IS3StorageService s3Service,
+            DatabaseConfiguration context)
         {
-            _messageSchedulingRepository = messageSchedulingRepository;
+            _repository = repository;
+            _mapper = mapper;
+            _s3Service = s3Service;
+            _context = context;
         }
 
-        public MessageSchedulingListResponse GetAll(int sectorId)
+        public async Task<Response<List<MessageSchedulingViewModel>>> GetAll(int sectorId)
         {
-            var messageSchedulings = _messageSchedulingRepository.GetAll(sectorId);
-            var messageSchedulingDtos = messageSchedulings.Select(ms => new MessageSchedulingViewModel(
-                ms.Id,
-                ms.Name,
-                ms.MessageText,
-                ms.SendDate,
-                ms.ContactId,
-                ms.SectorId,
-                ms.Status,
-                ms.TagIds,
-                ms.CreatedAt,
-                ms.UpdatedAt
-            )).ToList();
-            return new MessageSchedulingListResponse("Success", "200", messageSchedulingDtos);
-        }
-
-        public SingleMessageSchedulingResponse? GetById(int id)
-        {
-            var messageScheduling = _messageSchedulingRepository.GetById(id);
-            if (messageScheduling == null)
+            try
             {
-                return new SingleMessageSchedulingResponse("Message Scheduling not found", "404", null);
+                var messages = await _repository.GetAll(sectorId);
+                var viewModels = _mapper.Map<List<MessageSchedulingViewModel>>(messages);
+
+                return new Response<List<MessageSchedulingViewModel>>
+                {
+                    Success = true,
+                    Message = "Message schedulings retrieved successfully.",
+                    StatusCode = 200,
+                    Data = viewModels
+                };
             }
-            var messageSchedulingDto = new MessageSchedulingViewModel(
-                messageScheduling.Id,
-                messageScheduling.Name,
-                messageScheduling.MessageText,
-                messageScheduling.SendDate,
-                messageScheduling.ContactId,
-                messageScheduling.SectorId,
-                messageScheduling.Status,
-                messageScheduling.TagIds,
-                messageScheduling.CreatedAt,
-                messageScheduling.UpdatedAt
-            );
-            return new SingleMessageSchedulingResponse("Success", "200", messageSchedulingDto);
+            catch (Exception ex)
+            {
+                return new Response<List<MessageSchedulingViewModel>>
+                {
+                    Success = false,
+                    Message = $"Error retrieving message schedulings: {ex.Message}",
+                    StatusCode = 500,
+                    Data = null
+                };
+            }
         }
 
-        public SingleMessageSchedulingResponse Save(CreateMessageSchedulingRequestDTO messageSchedulingDto)
+        public async Task<Response<MessageSchedulingViewModel>> GetById(int id)
         {
-            if (string.IsNullOrWhiteSpace(messageSchedulingDto.Name))
+            try
             {
-                return new SingleMessageSchedulingResponse("Invalid request: Name is required", "400", null);
+                var message = await _repository.GetById(id);
+                if (message == null)
+                {
+                    return new Response<MessageSchedulingViewModel>
+                    {
+                        Success = false,
+                        Message = $"Message scheduling with ID {id} not found.",
+                        StatusCode = 404,
+                        Data = null
+                    };
+                }
+
+                var viewModel = _mapper.Map<MessageSchedulingViewModel>(message);
+                return new Response<MessageSchedulingViewModel>
+                {
+                    Success = true,
+                    Message = "Message scheduling retrieved successfully.",
+                    StatusCode = 200,
+                    Data = viewModel
+                };
             }
-
-            var messageScheduling = new MessageScheduling
+            catch (Exception ex)
             {
-                Name = messageSchedulingDto.Name,
-                MessageText = messageSchedulingDto.MessageText,
-                SendDate = messageSchedulingDto.SendDate,
-                ContactId = messageSchedulingDto.ContactId,
-                SectorId = messageSchedulingDto.SectorId,
-                Status = messageSchedulingDto.Status,
-                TagIds = messageSchedulingDto.TagIds,
-                CreatedAt = DateTime.UtcNow,
-                UpdatedAt = DateTime.UtcNow
-            };
-
-            var savedMessageScheduling = _messageSchedulingRepository.Save(messageScheduling);
-            var responseDto = new MessageSchedulingViewModel(
-                savedMessageScheduling.Id,
-                savedMessageScheduling.Name,
-                savedMessageScheduling.MessageText,
-                savedMessageScheduling.SendDate,
-                savedMessageScheduling.ContactId,
-                savedMessageScheduling.SectorId,
-                savedMessageScheduling.Status,
-                savedMessageScheduling.TagIds,
-                savedMessageScheduling.CreatedAt,
-                savedMessageScheduling.UpdatedAt
-            );
-            return new SingleMessageSchedulingResponse("Message Scheduling created successfully", "201", responseDto);
+                return new Response<MessageSchedulingViewModel>
+                {
+                    Success = false,
+                    Message = $"Error retrieving message scheduling: {ex.Message}",
+                    StatusCode = 500,
+                    Data = null
+                };
+            }
         }
 
-        public SingleMessageSchedulingResponse Update(int id, UpdateMessageSchedulingRequestDTO messageSchedulingDto)
+        public async Task<Response<MessageSchedulingViewModel>> SaveAsync(CreateMessageSchedulingRequestDTO messageDto)
         {
-            var existingMessageScheduling = _messageSchedulingRepository.GetById(id);
-            if (existingMessageScheduling == null)
+            try
             {
-                return new SingleMessageSchedulingResponse("Message Scheduling not found", "404", null);
+                // Validar se o setor existe
+                var sectorExists = await _context.Sectors.AnyAsync(s => s.Id == messageDto.SectorId);
+                if (!sectorExists)
+                {
+                    return new Response<MessageSchedulingViewModel>
+                    {
+                        Success = false,
+                        Message = $"Setor com ID {messageDto.SectorId} não encontrado",
+                        StatusCode = 404
+                    };
+                }
+
+                // Validar se o contato existe
+                var contactExists = await _context.Contacts.AnyAsync(c => c.Id == messageDto.ContactId);
+                if (!contactExists)
+                {
+                    return new Response<MessageSchedulingViewModel>
+                    {
+                        Success = false,
+                        Message = $"Contato com ID {messageDto.ContactId} não encontrado",
+                        StatusCode = 404
+                    };
+                }
+
+                var message = _mapper.Map<MessageScheduling>(messageDto);
+                message.CreatedAt = DateTime.UtcNow;
+                message.UpdatedAt = DateTime.UtcNow;
+
+                if (messageDto.Attachments != null && messageDto.Attachments.Count > 0)
+                {
+                    foreach (var attachment in messageDto.Attachments)
+                    {
+                        string base64Content = attachment.Data ?? attachment.Base64Content;
+                        if (string.IsNullOrEmpty(base64Content))
+                        {
+                            continue;
+                        }
+
+                        string s3Url = await _s3Service.UploadFileAsync(
+                            base64Content,
+                            attachment.Name,
+                            attachment.Type,
+                            attachment.MimeType
+                        );
+
+                        var messageAttachment = new MessageAttachment
+                        {
+                            Type = attachment.Type,
+                            FileName = attachment.Name,
+                            S3Url = s3Url,
+                            CreatedAt = DateTime.UtcNow,
+                            UpdatedAt = DateTime.UtcNow
+                        };
+
+                        message.Attachments.Add(messageAttachment);
+                    }
+                }
+
+                var savedMessage = await _repository.Save(message);
+                var viewModel = _mapper.Map<MessageSchedulingViewModel>(savedMessage);
+
+                return new Response<MessageSchedulingViewModel>
+                {
+                    Success = true,
+                    Message = "Message scheduled successfully",
+                    Data = viewModel,
+                    StatusCode = 201
+                };
             }
-
-            if (messageSchedulingDto.Name != null)
-                existingMessageScheduling.Name = messageSchedulingDto.Name;
-
-            if (messageSchedulingDto.MessageText != null)
-                existingMessageScheduling.MessageText = messageSchedulingDto.MessageText;
-
-            if (!string.IsNullOrEmpty(messageSchedulingDto.SendDate))
-                existingMessageScheduling.SendDate = messageSchedulingDto.SendDate;
-
-            if (messageSchedulingDto.ContactId.HasValue)
-                existingMessageScheduling.ContactId = messageSchedulingDto.ContactId.Value;
-
-            if (messageSchedulingDto.SectorId.HasValue)
-                existingMessageScheduling.SectorId = messageSchedulingDto.SectorId.Value;
-
-            if (messageSchedulingDto.Status.HasValue)
-                existingMessageScheduling.Status = messageSchedulingDto.Status.Value;
-
-            if (messageSchedulingDto.TagIds != null)
-                existingMessageScheduling.TagIds = messageSchedulingDto.TagIds;
-
-            existingMessageScheduling.UpdatedAt = DateTime.UtcNow;
-
-            var savedMessageScheduling = _messageSchedulingRepository.Update(id, existingMessageScheduling);
-            var responseDto = new MessageSchedulingViewModel(
-                savedMessageScheduling.Id,
-                savedMessageScheduling.Name,
-                savedMessageScheduling.MessageText,
-                savedMessageScheduling.SendDate,
-                savedMessageScheduling.ContactId,
-                savedMessageScheduling.SectorId,
-                savedMessageScheduling.Status,
-                savedMessageScheduling.TagIds,
-                savedMessageScheduling.CreatedAt,
-                savedMessageScheduling.UpdatedAt
-            );
-            return new SingleMessageSchedulingResponse("Message Scheduling updated successfully", "200", responseDto);
+            catch (Exception ex)
+            {
+                return new Response<MessageSchedulingViewModel>
+                {
+                    Success = false,
+                    Message = $"Error scheduling message: {ex.Message}",
+                    StatusCode = 500
+                };
+            }
         }
 
-        public SingleMessageSchedulingResponse Delete(int id)
+        public async Task<Response<MessageSchedulingViewModel>> Update(int id, UpdateMessageSchedulingRequestDTO messageDto)
         {
-            var deletedMessageScheduling = _messageSchedulingRepository.Delete(id);
-            if (deletedMessageScheduling == null)
+            try
             {
-                return new SingleMessageSchedulingResponse("Message Scheduling not found", "404", null);
+                var existingMessage = await _repository.GetById(id);
+                if (existingMessage == null)
+                {
+                    return new Response<MessageSchedulingViewModel>
+                    {
+                        Success = false,
+                        Message = $"Message scheduling with ID {id} not found.",
+                        StatusCode = 404,
+                        Data = null
+                    };
+                }
+
+                _mapper.Map(messageDto, existingMessage);
+
+                if (messageDto.Attachments != null && messageDto.Attachments.Any())
+                {
+                    foreach (var attachment in existingMessage.Attachments.ToList())
+                    {
+                        await _s3Service.DeleteFileAsync(attachment.S3Url);
+                    }
+                    existingMessage.Attachments.Clear();
+
+                    foreach (var attachmentDto in messageDto.Attachments)
+                    {
+                        string content = attachmentDto.Base64Content ?? attachmentDto.Data;
+                        if (string.IsNullOrEmpty(content))
+                        {
+                            continue;
+                        }
+
+                        var s3Url = await _s3Service.UploadFileAsync(content, attachmentDto.Name, attachmentDto.Type);
+                        var attachment = new MessageAttachment(attachmentDto.Type, attachmentDto.Name, s3Url);
+                        existingMessage.Attachments.Add(attachment);
+                    }
+                }
+
+                var updatedMessage = await _repository.Update(existingMessage);
+                var viewModel = _mapper.Map<MessageSchedulingViewModel>(updatedMessage);
+
+                return new Response<MessageSchedulingViewModel>
+                {
+                    Success = true,
+                    Message = "Message scheduling updated successfully.",
+                    StatusCode = 200,
+                    Data = viewModel
+                };
             }
-            var responseDto = new MessageSchedulingViewModel(
-                deletedMessageScheduling.Id,
-                deletedMessageScheduling.Name,
-                deletedMessageScheduling.MessageText,
-                deletedMessageScheduling.SendDate,
-                deletedMessageScheduling.ContactId,
-                deletedMessageScheduling.SectorId,
-                deletedMessageScheduling.Status,
-                deletedMessageScheduling.TagIds,
-                deletedMessageScheduling.CreatedAt,
-                deletedMessageScheduling.UpdatedAt
-            );
-            return new SingleMessageSchedulingResponse("Message Scheduling deleted successfully", "200", responseDto);
+            catch (Exception ex)
+            {
+                return new Response<MessageSchedulingViewModel>
+                {
+                    Success = false,
+                    Message = $"Error updating message scheduling: {ex.Message}",
+                    StatusCode = 500,
+                    Data = null
+                };
+            }
+        }
+
+        public async Task<Response<bool>> Delete(int id)
+        {
+            try
+            {
+                var message = await _repository.GetById(id);
+                if (message == null)
+                {
+                    return new Response<bool>
+                    {
+                        Success = false,
+                        Message = "Message not found",
+                        StatusCode = 404
+                    };
+                }
+
+                if (message.Attachments != null)
+                {
+                    foreach (var attachment in message.Attachments)
+                    {
+                        if (!string.IsNullOrEmpty(attachment.S3Url))
+                        {
+                            await _s3Service.DeleteFileAsync(attachment.S3Url);
+                        }
+                    }
+                }
+
+                await _repository.Delete(id);
+
+                return new Response<bool>
+                {
+                    Success = true,
+                    Message = "Message deleted successfully",
+                    Data = true,
+                    StatusCode = 200
+                };
+            }
+            catch (Exception ex)
+            {
+                return new Response<bool>
+                {
+                    Success = false,
+                    Message = $"Error deleting message: {ex.Message}",
+                    StatusCode = 500
+                };
+            }
+        }
+
+        private string GetContentType(string fileName)
+        {
+            var extension = Path.GetExtension(fileName).ToLowerInvariant();
+            switch (extension)
+            {
+                case ".jpg":
+                case ".jpeg":
+                    return "image/jpeg";
+                case ".png":
+                    return "image/png";
+                case ".gif":
+                    return "image/gif";
+                case ".pdf":
+                    return "application/pdf";
+                case ".doc":
+                case ".docx":
+                    return "application/msword";
+                case ".xls":
+                case ".xlsx":
+                    return "application/vnd.ms-excel";
+                case ".txt":
+                    return "text/plain";
+                case ".mp3":
+                    return "audio/mpeg";
+                case ".mp4":
+                    return "video/mp4";
+                case ".wav":
+                    return "audio/wav";
+                default:
+                    return "application/octet-stream";
+            }
         }
     }
 }

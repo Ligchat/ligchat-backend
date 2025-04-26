@@ -255,7 +255,8 @@ namespace LigChat.Backend.Application.Repositories
                 SectorId = c.SectorId,
                 AiActive = c.AiActive,
                 CreatedAt = c.CreatedAt,
-                UpdatedAt = c.UpdatedAt
+                UpdatedAt = c.UpdatedAt,
+                IsOfficial = c.IsOfficial
             };
         }
     }

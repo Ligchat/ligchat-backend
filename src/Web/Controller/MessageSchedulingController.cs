@@ -1,145 +1,113 @@
-﻿using LigChat.Backend.Application.Common.Mappings.MessageSchedulingActionResults;
+﻿using LigChat.Backend.Application.Common;
+using LigChat.Backend.Application.Interface.MessageSchedulingInterface;
+using LigChat.Backend.Application.Interface.S3StorageInterface;
 using LigChat.Backend.Domain.DTOs.MessageSchedulingDto;
-using LigChat.Data.Interfaces.IControllers;
-using LigChat.Data.Interfaces.IServices;
+using LigChat.Backend.Domain.ViewModels;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Configuration;
+using System.Collections.Generic;
+using System.Threading.Tasks;
 
-namespace LigChat.Api.Controllers
+namespace LigChat.Backend.Web.Controllers
 {
     [ApiController]
     [Route("api/message-schedulings")]
     public class MessageSchedulingController : ControllerBase, IMessageSchedulingControllerInterface
     {
         private readonly IMessageSchedulingServiceInterface _messageSchedulingService;
+        private readonly IS3StorageService _s3Service;
+        private readonly IConfiguration _configuration;
 
-        public MessageSchedulingController(IMessageSchedulingServiceInterface messageSchedulingService)
+        public MessageSchedulingController(
+            IMessageSchedulingServiceInterface messageSchedulingService,
+            IS3StorageService s3Service,
+            IConfiguration configuration)
         {
             _messageSchedulingService = messageSchedulingService;
+            _s3Service = s3Service;
+            _configuration = configuration;
+        }
+
+        [HttpGet("test-s3")]
+        public IActionResult TestS3Configuration()
+        {
+            var config = new
+            {
+                AccessKey = _configuration["AWS:AccessKey"]?.Substring(0, 5) + "...",
+                SecretKey = _configuration["AWS:SecretKey"]?.Substring(0, 5) + "...",
+                BucketName = _configuration["AWS:BucketName"],
+                Region = _configuration["AWS:Region"]
+            };
+
+            return Ok(new { Message = "AWS Configuration", Configuration = config });
         }
 
         [HttpGet]
-        public IActionResult GetAll([FromQuery] int sectorId)
+        public async Task<IActionResult> GetAll([FromQuery] int sectorId)
         {
             if (sectorId <= 0)
             {
-                return BadRequest(new MessageSchedulingListResponse
+                return BadRequest(new Response<List<MessageSchedulingViewModel>>
                 {
+                    Success = false,
                     Message = "Invalid sector ID.",
-                    Code = "400",
-                    Data = new List<MessageSchedulingViewModel>()
+                    StatusCode = 400,
+                    Data = null
                 });
             }
 
-            var messageSchedulingListResponse = _messageSchedulingService.GetAll(sectorId);
-            if (messageSchedulingListResponse == null || !messageSchedulingListResponse.Data.Any())
-            {
-                return NotFound(new MessageSchedulingListResponse
-                {
-                    Message = "No message schedulings found for this sector.",
-                    Code = "404",
-                    Data = new List<MessageSchedulingViewModel>()
-                });
-            }
-
-            return Ok(messageSchedulingListResponse);
+            var response = await _messageSchedulingService.GetAll(sectorId);
+            return StatusCode(response.StatusCode, response);
         }
 
         [HttpGet("{id}")]
-        public IActionResult GetById(int id)
+        public async Task<IActionResult> GetById(int id)
         {
-            var messageSchedulingResponse = _messageSchedulingService.GetById(id);
-
-            if (messageSchedulingResponse == null)
-            {
-                return NotFound(new SingleMessageSchedulingResponse
-                {
-                    Message = "Message scheduling not found.",
-                    Code = "404",
-                    Data = null
-                });
-            }
-
-            return Ok(messageSchedulingResponse);
+            var response = await _messageSchedulingService.GetById(id);
+            return StatusCode(response.StatusCode, response);
         }
 
         [HttpPost]
-        public IActionResult Save([FromBody] CreateMessageSchedulingRequestDTO messageSchedulingDto)
+        public async Task<IActionResult> Save([FromBody] CreateMessageSchedulingRequestDTO messageScheduling)
         {
-            if (messageSchedulingDto == null)
+            if (!ModelState.IsValid)
             {
-                return BadRequest("Message scheduling data is required.");
-            }
-
-            var createdMessageSchedulingResponse = _messageSchedulingService.Save(messageSchedulingDto);
-
-            if (createdMessageSchedulingResponse == null)
-            {
-                return BadRequest(new SingleMessageSchedulingResponse
+                return BadRequest(new Response<MessageSchedulingViewModel>
                 {
-                    Message = "Message scheduling could not be created.",
-                    Code = "400",
+                    Success = false,
+                    Message = "Invalid message scheduling data.",
+                    StatusCode = 400,
                     Data = null
                 });
             }
 
-            return CreatedAtAction(
-                nameof(GetById),
-                new { id = createdMessageSchedulingResponse.Data?.Id },
-                createdMessageSchedulingResponse
-            );
+            var response = await _messageSchedulingService.SaveAsync(messageScheduling);
+            return StatusCode(response.StatusCode, response);
         }
 
         [HttpPut("{id}")]
-        public IActionResult Update(int id, [FromBody] UpdateMessageSchedulingRequestDTO messageSchedulingDto)
+        public async Task<IActionResult> Update(int id, [FromBody] UpdateMessageSchedulingRequestDTO messageScheduling)
         {
-            if (messageSchedulingDto == null)
+            if (!ModelState.IsValid)
             {
-                return BadRequest("Message scheduling data is required.");
-            }
-
-            var existingMessageSchedulingResponse = _messageSchedulingService.GetById(id);
-
-            if (existingMessageSchedulingResponse == null)
-            {
-                return NotFound(new SingleMessageSchedulingResponse
+                return BadRequest(new Response<MessageSchedulingViewModel>
                 {
-                    Message = "Message scheduling not found.",
-                    Code = "404",
+                    Success = false,
+                    Message = "Invalid message scheduling data.",
+                    StatusCode = 400,
                     Data = null
                 });
             }
 
-            var updatedMessageSchedulingResponse = _messageSchedulingService.Update(id, messageSchedulingDto);
-            if (updatedMessageSchedulingResponse == null)
-            {
-                return BadRequest(new SingleMessageSchedulingResponse
-                {
-                    Message = "Message scheduling could not be updated.",
-                    Code = "400",
-                    Data = null
-                });
-            }
-
-            return Ok(updatedMessageSchedulingResponse);
+            var response = await _messageSchedulingService.Update(id, messageScheduling);
+            return StatusCode(response.StatusCode, response);
         }
 
         [HttpDelete("{id}")]
-        public IActionResult Delete(int id)
+        public async Task<IActionResult> Delete(int id)
         {
-            var messageSchedulingResponse = _messageSchedulingService.GetById(id);
-
-            if (messageSchedulingResponse == null)
-            {
-                return NotFound(new SingleMessageSchedulingResponse
-                {
-                    Message = "Message scheduling not found.",
-                    Code = "404",
-                    Data = null
-                });
-            }
-
-            _messageSchedulingService.Delete(id);
-            return NoContent();
+            var response = await _messageSchedulingService.Delete(id);
+            return StatusCode(response.StatusCode, response);
         }
     }
 }

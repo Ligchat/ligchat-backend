@@ -74,6 +74,16 @@ namespace LigChat.Backend.Domain.DTOs.ContactDto
         public string? Priority { get; set; } = "normal";
 
         /// <summary>
+        /// Status do contato.
+        /// </summary>
+        public string? ContactStatus { get; set; }
+
+        /// <summary>
+        /// Identificador do setor associado ao contato.
+        /// </summary>
+        public bool IsOfficial { get; set; }
+
+        /// <summary>
         /// Construtor para inicialização da classe <see cref="CreateContactRequestDTO"/>.
         /// </summary>
         /// <param name="name">Nome do contato.</param>
@@ -96,7 +106,8 @@ namespace LigChat.Backend.Domain.DTOs.ContactDto
             bool isActive = true,
             int aiActive = 1,
             int? assignedTo = null,
-            string? priority = "normal")
+            string? priority = "normal",
+            bool isOfficial = false)
         {
             Name = name;
             TagId = tagId;
@@ -109,6 +120,7 @@ namespace LigChat.Backend.Domain.DTOs.ContactDto
             AiActive = aiActive;
             AssignedTo = assignedTo;
             Priority = priority;
+            IsOfficial = isOfficial;
         }
     }
 }

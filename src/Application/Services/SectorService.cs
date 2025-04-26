@@ -49,7 +49,8 @@ namespace LigChat.Api.Services.SectorService
                 sector.PhoneNumberId,
                 sector.AccessToken,
                 sector.CreatedAt,
-                sector.UpdatedAt
+                sector.UpdatedAt,
+                sector.IsOfficial
             )).ToList();
 
             return new SectorListResponse("Success", "200", sectorDtos);
@@ -74,7 +75,8 @@ namespace LigChat.Api.Services.SectorService
                 sector.PhoneNumberId,
                 sector.AccessToken,
                 sector.CreatedAt,
-                sector.UpdatedAt
+                sector.UpdatedAt,
+                sector.IsOfficial
             );
             return new SingleSectorResponse("Success", "200", sectorDto);
         }
@@ -106,6 +108,7 @@ namespace LigChat.Api.Services.SectorService
                 OAuth2AccessToken = sectorDto.OAuth2AccessToken ?? string.Empty,
                 OAuth2RefreshToken = sectorDto.OAuth2RefreshToken ?? string.Empty,
                 OAuth2TokenExpiration = sectorDto.OAuth2TokenExpiration,
+                IsOfficial = sectorDto.IsOfficial ?? false,
                 CreatedAt = DateTime.UtcNow,
                 UpdatedAt = DateTime.UtcNow
             };
@@ -130,7 +133,8 @@ namespace LigChat.Api.Services.SectorService
                 savedSector.PhoneNumberId,
                 savedSector.AccessToken,
                 savedSector.CreatedAt,
-                savedSector.UpdatedAt
+                savedSector.UpdatedAt,
+                savedSector.IsOfficial
             );
             return new SingleSectorResponse("Sector created successfully", "201", responseDto);
         }
@@ -168,6 +172,9 @@ namespace LigChat.Api.Services.SectorService
             if (sectorDto.Status.HasValue)
                 existingSector.Status = sectorDto.Status.Value;
 
+            if (sectorDto.IsOfficial.HasValue)
+                existingSector.IsOfficial = sectorDto.IsOfficial.Value;
+
             if (!string.IsNullOrWhiteSpace(sectorDto.GoogleClientId))
                 existingSector.GoogleClientId = sectorDto.GoogleClientId;
 
@@ -195,7 +202,8 @@ namespace LigChat.Api.Services.SectorService
                 savedSector.PhoneNumberId,
                 savedSector.AccessToken,
                 savedSector.CreatedAt,
-                savedSector.UpdatedAt
+                savedSector.UpdatedAt,
+                savedSector.IsOfficial
             );
             return new SingleSectorResponse("Sector updated successfully", "200", responseDto);
         }

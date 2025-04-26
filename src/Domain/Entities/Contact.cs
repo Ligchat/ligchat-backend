@@ -111,6 +111,24 @@ namespace LigChat.Backend.Domain.Entities
         public int? AssignedTo { get; set; }
 
         /// <summary>
+        /// Indica se o contato é oficial.
+        /// </summary>
+        [Column("is_official")]
+        public bool IsOfficial { get; set; } = false;
+
+        /// <summary>
+        /// Prioridade do contato.
+        /// </summary>
+        [Column("priority")]
+        public string? Priority { get; set; } = "normal";
+
+        /// <summary>
+        /// Status do contato.
+        /// </summary>
+        [Column("contact_status")]
+        public string ContactStatus { get; set; } = "Novo";
+
+        /// <summary>
         /// Construtor padrão da classe Contact.
         /// Inicializa as propriedades com valores padrão.
         /// </summary>
@@ -123,6 +141,7 @@ namespace LigChat.Backend.Domain.Entities
             Priority = "normal";
             CreatedAt = DateTime.UtcNow;
             UpdatedAt = DateTime.UtcNow;
+            IsOfficial = false;
         }
 
         /// <summary>
@@ -157,18 +176,7 @@ namespace LigChat.Backend.Domain.Entities
             Notes = anotacoes;
             CreatedAt = DateTime.UtcNow;
             UpdatedAt = DateTime.UtcNow;
+            IsOfficial = false;
         }
-
-        /// <summary>
-        /// Prioridade do contato.
-        /// </summary>
-        [Column("priority")]
-        public string? Priority { get; set; } = "normal";
-
-        /// <summary>
-        /// Status do contato.
-        /// </summary>
-        [Column("contact_status")]
-        public string ContactStatus { get; set; } = "Novo";
     }
 }

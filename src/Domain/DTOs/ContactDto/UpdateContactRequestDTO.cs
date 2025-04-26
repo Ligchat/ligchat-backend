@@ -73,6 +73,11 @@ namespace LigChat.Backend.Domain.DTOs.ContactDto
         public int? AssignedTo { get; set; }
 
         /// <summary>
+        /// Indica se o contato é oficial ou não.
+        /// </summary>
+        public bool IsOfficial { get; set; }
+
+        /// <summary>
         /// Construtor para inicialização da classe <see cref="UpdateContactRequestDTO"/>.
         /// </summary>
         /// <param name="name">Nome do contato.</param>
@@ -86,6 +91,7 @@ namespace LigChat.Backend.Domain.DTOs.ContactDto
         /// <param name="priority">Prioridade do contato.</param>
         /// <param name="aiActive">Ativo artificial do contato.</param>
         /// <param name="assignedTo">Identificador do usuário atribuído ao contato.</param>
+        /// <param name="isOfficial">Indica se o contato é oficial ou não.</param>
         [JsonConstructor]
         public UpdateContactRequestDTO(
             string name,
@@ -98,7 +104,8 @@ namespace LigChat.Backend.Domain.DTOs.ContactDto
             bool isActive = true,
             string? priority = "normal",
             int aiActive = 1,
-            int? assignedTo = null)
+            int? assignedTo = null,
+            bool isOfficial = false)
         {
             Name = name;
             TagId = tagId;
@@ -111,6 +118,7 @@ namespace LigChat.Backend.Domain.DTOs.ContactDto
             Priority = priority;
             AiActive = aiActive;
             AssignedTo = assignedTo;
+            IsOfficial = isOfficial;
         }
     }
 }

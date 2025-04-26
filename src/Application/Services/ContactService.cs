@@ -76,7 +76,8 @@ namespace LigChat.Backend.Application.Services
                 AiActive = c.AiActive,
                 AssignedTo = c.AssignedTo,
                 CreatedAt = c.CreatedAt,
-                UpdatedAt = c.UpdatedAt
+                UpdatedAt = c.UpdatedAt,
+                IsOfficial = c.IsOfficial
             }).ToList();
 
             return new ContactListResponse("Success", "200", contactDtos);
@@ -109,7 +110,8 @@ namespace LigChat.Backend.Application.Services
                 AiActive = contact.AiActive,
                 AssignedTo = contact.AssignedTo,
                 CreatedAt = contact.CreatedAt,
-                UpdatedAt = contact.UpdatedAt
+                UpdatedAt = contact.UpdatedAt,
+                IsOfficial = contact.IsOfficial
             };
 
             return new SingleContactResponse("Success", "200", contactDto);
@@ -140,7 +142,8 @@ namespace LigChat.Backend.Application.Services
                 AiActive = contactDto.AiActive,
                 AssignedTo = contactDto.AssignedTo,
                 CreatedAt = DateTime.UtcNow,
-                UpdatedAt = DateTime.UtcNow
+                UpdatedAt = DateTime.UtcNow,
+                IsOfficial = contactDto.IsOfficial
             };
 
             var savedContact = _contactRepository.Save(contact);
@@ -162,7 +165,8 @@ namespace LigChat.Backend.Application.Services
                 AiActive = savedContact.AiActive,
                 AssignedTo = savedContact.AssignedTo,
                 CreatedAt = savedContact.CreatedAt,
-                UpdatedAt = savedContact.UpdatedAt
+                UpdatedAt = savedContact.UpdatedAt,
+                IsOfficial = savedContact.IsOfficial
             };
 
             return new SingleContactResponse("Contact created successfully", "201", responseDto);
@@ -199,6 +203,7 @@ namespace LigChat.Backend.Application.Services
             existingContact.AiActive = contactDto.AiActive;
             existingContact.AssignedTo = contactDto.AssignedTo ?? existingContact.AssignedTo;
             existingContact.UpdatedAt = DateTime.UtcNow;
+            existingContact.IsOfficial = contactDto.IsOfficial;
 
             // Salva o contato atualizado no repositório
             var savedContact = _contactRepository.Update(id, existingContact);
@@ -220,7 +225,8 @@ namespace LigChat.Backend.Application.Services
                 AiActive = savedContact.AiActive,
                 AssignedTo = savedContact.AssignedTo,
                 CreatedAt = savedContact.CreatedAt,
-                UpdatedAt = savedContact.UpdatedAt
+                UpdatedAt = savedContact.UpdatedAt,
+                IsOfficial = savedContact.IsOfficial
             };
 
             return new SingleContactResponse("Contact updated successfully", "200", responseDto);
@@ -252,7 +258,11 @@ namespace LigChat.Backend.Application.Services
                 Priority = deletedContact.Priority,
                 ContactStatus = deletedContact.ContactStatus,
                 SectorId = deletedContact.SectorId,
-                AiActive = deletedContact.AiActive
+                AiActive = deletedContact.AiActive,
+                AssignedTo = deletedContact.AssignedTo,
+                CreatedAt = deletedContact.CreatedAt,
+                UpdatedAt = deletedContact.UpdatedAt,
+                IsOfficial = deletedContact.IsOfficial
             };
 
             return new SingleContactResponse("Contact deleted successfully", "200", responseDto);
@@ -282,7 +292,8 @@ namespace LigChat.Backend.Application.Services
                 AiActive = c.AiActive,
                 AssignedTo = c.AssignedTo,
                 CreatedAt = c.CreatedAt,
-                UpdatedAt = c.UpdatedAt
+                UpdatedAt = c.UpdatedAt,
+                IsOfficial = c.IsOfficial
             }).ToList();
 
             return new ContactListResponse("Success", "200", contactDtos);

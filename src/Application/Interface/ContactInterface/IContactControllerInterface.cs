@@ -6,7 +6,7 @@ namespace LigChat.Backend.Application.Interface.ContactInterface
     public interface IContactControllerInterface
     {
         // Retorna todos os contatos. Deve retornar um IActionResult que pode incluir um status code e os dados dos contatos.
-        IActionResult GetAll();
+        IActionResult GetAll(bool? isOfficial = null);
 
         // Retorna um contato específico baseado no ID. Deve retornar um IActionResult com o status e os dados do contato.
         IActionResult GetById(int id);

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Text.Json.Serialization;
 
 namespace LigChat.Backend.Domain.DTOs.MessageSchedulingDto
@@ -126,33 +127,6 @@ namespace LigChat.Backend.Domain.DTOs.MessageSchedulingDto
             FileAttachment = fileAttachment;
             ImageMimeType = imageMimeType;
             FileMimeType = fileMimeType;
-        }
-    }
-
-    /// <summary>
-    /// DTO para anexos associados a uma mensagem agendada.
-    /// </summary>
-    public class AttachmentDTO
-    {
-        /// <summary>
-        /// Tipo do anexo (por exemplo, imagem, documento).
-        /// </summary>
-        public string Type { get; }
-
-        /// <summary>
-        /// Conteúdo do anexo em base64.
-        /// </summary>
-        public string Content { get; }
-
-        /// <summary>
-        /// Construtor para inicializar o DTO do anexo.
-        /// </summary>
-        /// <param name="type">Tipo do anexo.</param>
-        /// <param name="content">Conteúdo do anexo.</param>
-        public AttachmentDTO(string type, string content)
-        {
-            Type = type ?? throw new ArgumentNullException(nameof(type));
-            Content = content ?? throw new ArgumentNullException(nameof(content));
         }
     }
 }

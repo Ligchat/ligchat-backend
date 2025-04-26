@@ -51,6 +51,8 @@ namespace LigChat.Backend.Web.Extensions.Database
 
         public DbSet<MessageScheduling> MessageSchedulings { get; set; }
 
+        public DbSet<MessageAttachment> MessageAttachments { get; set; }
+
         public DbSet<Sector> Sectors { get; set; }
 
         public DbSet<Tag> Tags { get; set; }
@@ -81,6 +83,13 @@ namespace LigChat.Backend.Web.Extensions.Database
                 .WithMany(col => col.Cards)
                 .HasForeignKey(c => c.ColumnId)
                 .IsRequired(false);  // Tornando a relação opcional
+
+            // Configurando relacionamento MessageScheduling-MessageAttachment
+            modelBuilder.Entity<MessageScheduling>()
+                .HasMany(m => m.Attachments)
+                .WithOne(a => a.Message)
+                .HasForeignKey(a => a.MessageId)
+                .OnDelete(DeleteBehavior.Cascade);
 
             // Desabilitando carregamento automático de relacionamentos
             foreach (var relationship in modelBuilder.Model.GetEntityTypes()

@@ -32,6 +32,9 @@
         // Data e hora da última atualização do setor
         public DateTime UpdatedAt { get; private set; }
 
+        // Indica se o setor é oficial
+        public bool IsOfficial { get; private set; }
+
         /// <summary>
         /// Construtor padrão que inicializa as propriedades com valores padrão.
         /// </summary>
@@ -45,6 +48,7 @@
             PhoneNumberId = null;
             AccessToken = null;
             CreatedAt = UpdatedAt = DateTime.UtcNow;
+            IsOfficial = false;
         }
 
         /// <summary>
@@ -59,6 +63,7 @@
         /// <param name="accessToken">Token de acesso para o setor.</param>
         /// <param name="createdAt">Data de criação do setor.</param>
         /// <param name="updatedAt">Data da última atualização do setor.</param>
+        /// <param name="isOfficial">Indica se o setor é oficial.</param>
         public SectorViewModel(
             int id,
             string name,
@@ -68,7 +73,8 @@
             string? phoneNumberId,
             string? accessToken,
             DateTime createdAt,
-            DateTime updatedAt)
+            DateTime updatedAt,
+            bool isOfficial = false)
         {
             Id = id;
             Name = name;
@@ -79,6 +85,7 @@
             AccessToken = accessToken;
             CreatedAt = createdAt;
             UpdatedAt = updatedAt;
+            IsOfficial = isOfficial;
         }
     }
 }

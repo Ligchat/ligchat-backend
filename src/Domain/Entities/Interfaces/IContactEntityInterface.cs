@@ -1,4 +1,5 @@
 using LigChat.Backend.Data.Interfaces;
+using LigChat.Backend.Domain.Entities.Interfaces;
 
 namespace LigChat.Backend.Domain.Entities.Interfaces
 {

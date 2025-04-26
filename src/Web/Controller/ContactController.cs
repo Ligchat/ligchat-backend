@@ -27,9 +27,15 @@ namespace LigChat.Backend.Web.Controller
         /// Retorna uma resposta com uma lista de contatos.
         /// </summary>
         [HttpGet]
-        public IActionResult GetAll()
+        public IActionResult GetAll([FromQuery] bool? isOfficial = null)
         {
             var response = _contactService.GetAll();
+            
+            if (isOfficial.HasValue)
+            {
+                response.Data = response.Data.Where(c => c.IsOfficial == isOfficial.Value).ToList();
+            }
+
             return StatusCode(int.Parse(response.Code), response);
         }
 
@@ -102,13 +108,20 @@ namespace LigChat.Backend.Web.Controller
         }
 
         [HttpGet("sector/{sectorId}")]
-        public IActionResult GetBySector([FromRoute] int sectorId)
+        public IActionResult GetBySector([FromRoute] int sectorId, [FromQuery] bool? isOfficial = null)
         {
             var response = _contactService.GetBySector(sectorId);
-            if (response.Message.Contains("Nenhum contato encontrado"))
+            
+            if (isOfficial.HasValue)
+            {
+                response.Data = response.Data.Where(c => c.IsOfficial == isOfficial.Value).ToList();
+            }
+            
+            if (!response.Data.Any())
             {
                 return NotFound(response);
             }
+            
             return Ok(response);
         }
     }

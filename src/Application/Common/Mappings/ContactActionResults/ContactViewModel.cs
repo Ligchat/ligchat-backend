@@ -51,6 +51,11 @@ namespace LigChat.Backend.Application.Common.Mappings.ContactActionResults
         public DateTime UpdatedAt { get; set; }
 
         /// <summary>
+        /// Indica se o contato é oficial.
+        /// </summary>
+        public bool IsOfficial { get; set; }
+
+        /// <summary>
         /// Construtor padrão que inicializa as propriedades com valores padrão.
         /// </summary>
         public ContactViewModel()
@@ -70,12 +75,13 @@ namespace LigChat.Backend.Application.Common.Mappings.ContactActionResults
             AssignedTo = null;
             CreatedAt = DateTime.UtcNow;
             UpdatedAt = DateTime.UtcNow;
+            IsOfficial = false;
         }
 
         /// <summary>
         /// Construtor para inicializar o DTO com valores específicos.
         /// </summary>
-        public ContactViewModel(int id, string name, int? tagId, string number, string? avatarUrl = null, string? email = null, string? notes = null, bool isActive = false, int? sectorId = null, string? priority = null, string contactStatus = "", int aiActive = 0, int? assignedTo = null, DateTime? createdAt = null, DateTime? updatedAt = null)
+        public ContactViewModel(int id, string name, int? tagId, string number, string? avatarUrl = null, string? email = null, string? notes = null, bool isActive = false, int? sectorId = null, string? priority = null, string contactStatus = "", int aiActive = 0, int? assignedTo = null, DateTime? createdAt = null, DateTime? updatedAt = null, bool isOfficial = false)
         {
             Id = id;
             Name = name;
@@ -92,6 +98,7 @@ namespace LigChat.Backend.Application.Common.Mappings.ContactActionResults
             AssignedTo = assignedTo;
             CreatedAt = createdAt ?? DateTime.UtcNow;
             UpdatedAt = updatedAt ?? DateTime.UtcNow;
+            IsOfficial = isOfficial;
         }
     }
 }

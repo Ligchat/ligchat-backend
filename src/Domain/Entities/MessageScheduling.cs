@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
@@ -13,6 +14,7 @@ namespace LigChat.Backend.Domain.Entities
 
         [Column("nome")]
         [Required]
+        [StringLength(100)]
         public string Name { get; set; }
 
         [Column("mensagem_de_texto")]
@@ -43,6 +45,8 @@ namespace LigChat.Backend.Domain.Entities
         [Column("data_atualizacao")]
         public DateTime UpdatedAt { get; set; }
 
+        public virtual ICollection<MessageAttachment> Attachments { get; set; }
+
         public MessageScheduling()
         {
             CreatedAt = DateTime.UtcNow;
@@ -51,6 +55,7 @@ namespace LigChat.Backend.Domain.Entities
             MessageText = string.Empty;
             SendDate = string.Empty;
             TagIds = string.Empty;
+            Attachments = new List<MessageAttachment>();
         }
 
         public MessageScheduling(
@@ -71,6 +76,7 @@ namespace LigChat.Backend.Domain.Entities
             TagIds = tagIds;
             CreatedAt = DateTime.UtcNow;
             UpdatedAt = DateTime.UtcNow;
+            Attachments = new List<MessageAttachment>();
         }
     }
 }

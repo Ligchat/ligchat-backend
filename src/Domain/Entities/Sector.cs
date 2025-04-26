@@ -55,6 +55,9 @@ namespace LigChat.Backend.Domain.Entities
         [Column("status")]
         public bool? Status { get; set; } = true;
 
+        [Column("is_official")]
+        public bool IsOfficial { get; set; }
+
         /// <summary>
         /// Lista de relacionamentos com usuários através da tabela UserSector.
         /// </summary>
@@ -67,6 +70,7 @@ namespace LigChat.Backend.Domain.Entities
             PhoneNumberId = string.Empty;
             AccessToken = string.Empty;
             CreatedAt = UpdatedAt = DateTime.UtcNow;
+            IsOfficial = false;
         }
 
         public Sector(
@@ -79,7 +83,8 @@ namespace LigChat.Backend.Domain.Entities
             string googleApiKey,
             string? oauth2AccessToken,
             string? oauth2RefreshToken,
-            DateTime? oauth2TokenExpiration)
+            DateTime? oauth2TokenExpiration,
+            bool isOfficial = false)
         {
             Name = name ?? throw new ArgumentNullException(nameof(name));
             Description = description ?? throw new ArgumentNullException(nameof(description));
@@ -92,6 +97,7 @@ namespace LigChat.Backend.Domain.Entities
             OAuth2RefreshToken = oauth2RefreshToken;
             OAuth2TokenExpiration = oauth2TokenExpiration;
             CreatedAt = UpdatedAt = DateTime.UtcNow;
+            IsOfficial = isOfficial;
         }
     }
 }

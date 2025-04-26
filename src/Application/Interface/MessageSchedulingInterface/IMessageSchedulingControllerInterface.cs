@@ -1,23 +1,15 @@
 using LigChat.Backend.Domain.DTOs.MessageSchedulingDto;
 using Microsoft.AspNetCore.Mvc;
+using System.Threading.Tasks;
 
-namespace LigChat.Data.Interfaces.IControllers
+namespace LigChat.Backend.Application.Interface.MessageSchedulingInterface
 {
     public interface IMessageSchedulingControllerInterface
     {
-        // Retorna todas as mensagens agendadas. Deve retornar um IActionResult que pode incluir um status code e os dados das mensagens agendadas.
-        IActionResult GetAll(int sectorId);
-
-        // Retorna uma mensagem agendada específica baseada no ID. Deve retornar um IActionResult com o status e os dados da mensagem agendada.
-        IActionResult GetById(int id);
-
-        // Cria uma nova mensagem agendada com base no CreateMessageSchedulingRequestDTO. Deve retornar um IActionResult com o status da criação.
-        IActionResult Save(CreateMessageSchedulingRequestDTO messageScheduling);
-
-        // Atualiza uma mensagem agendada existente com base no ID e no UpdateMessageSchedulingRequestDTO. Deve retornar um IActionResult com o status da atualização.
-        IActionResult Update(int id, UpdateMessageSchedulingRequestDTO messageScheduling);
-
-        // Deleta uma mensagem agendada baseada no ID. Deve retornar um IActionResult com o status da exclusão.
-        IActionResult Delete(int id);
+        Task<IActionResult> GetAll(int sectorId);
+        Task<IActionResult> GetById(int id);
+        Task<IActionResult> Save(CreateMessageSchedulingRequestDTO messageScheduling);
+        Task<IActionResult> Update(int id, UpdateMessageSchedulingRequestDTO messageScheduling);
+        Task<IActionResult> Delete(int id);
     }
-}
+} 

@@ -59,6 +59,11 @@ namespace LigChat.Backend.Domain.DTOs.SectorDto
         public DateTime? OAuth2TokenExpiration { get; set; }
 
         /// <summary>
+        /// Indicador se o setor é oficial. Este campo é opcional.
+        /// </summary>
+        public bool? IsOfficial { get; set; }
+
+        /// <summary>
         /// Construtor para inicializar o DTO com valores específicos.
         /// </summary>
         [JsonConstructor]
@@ -72,7 +77,8 @@ namespace LigChat.Backend.Domain.DTOs.SectorDto
             string? googleApiKey = null,
             string? oauth2AccessToken = null,
             string? oauth2RefreshToken = null,
-            DateTime? oauth2TokenExpiration = null)
+            DateTime? oauth2TokenExpiration = null,
+            bool? isOfficial = null)
         {
             Name = name;
             Description = description;
@@ -84,6 +90,7 @@ namespace LigChat.Backend.Domain.DTOs.SectorDto
             OAuth2AccessToken = oauth2AccessToken;
             OAuth2RefreshToken = oauth2RefreshToken;
             OAuth2TokenExpiration = oauth2TokenExpiration;
+            IsOfficial = isOfficial;
         }
     }
 }

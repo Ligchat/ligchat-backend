@@ -36,7 +36,19 @@ namespace LigChat.Data.Repositories
 
             if (existingSector != null)
             {
+                existingSector.Name = sector.Name;
                 existingSector.Description = sector.Description;
+                existingSector.PhoneNumberId = sector.PhoneNumberId;
+                existingSector.AccessToken = sector.AccessToken;
+                existingSector.Status = sector.Status;
+                existingSector.GoogleClientId = sector.GoogleClientId;
+                existingSector.GoogleApiKey = sector.GoogleApiKey;
+                existingSector.OAuth2AccessToken = sector.OAuth2AccessToken;
+                existingSector.OAuth2RefreshToken = sector.OAuth2RefreshToken;
+                existingSector.OAuth2TokenExpiration = sector.OAuth2TokenExpiration;
+                existingSector.IsOfficial = sector.IsOfficial;
+                existingSector.UpdatedAt = DateTime.UtcNow;
+
                 _context.SaveChanges();
                 return existingSector;
             }
