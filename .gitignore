@@ -23,9 +23,6 @@ nupkg/
 *.userosscache
 *.sln.docstates
 
-# Dotnet Appsettings
-appsettings.Production.json
-
 # Build results
 [Dd]ebug/
 [Dd]ebugPublic/
