@@ -11,40 +11,40 @@ namespace tests_.src.Domain.Entities
         [Column("id")]
         public int Id { get; set; }
 
-        [Column("whatsapp_contact_id")]
-        public int WhatsappContactId { get; set; }
+        [Column("conteudo")]
+        public string Conteudo { get; set; }
 
-        [Column("content")]
-        public string Content { get; set; }
+        [Column("tipo")]
+        public string Tipo { get; set; }
 
-        [Column("created_at")]
-        public DateTime CreatedAt { get; set; }
+        [Column("url")]
+        public string Url { get; set; }
 
-        [Column("profile_pic_url")]
-        public string? ProfilePicUrl { get; set; }
+        [Column("nome_arquivo")]
+        public string NomeArquivo { get; set; }
 
-        [Column("name")]
-        public string? Name { get; set; }
+        [Column("mime_type")]
+        public string MimeType { get; set; }
 
-        [Column("message_type")]
-        public string MessageType { get; set; }
+        [Column("id_setor")]
+        public int IdSetor { get; set; }
 
-        [Column("media_url")]
-        public string? MediaUrl { get; set; }
+        [Column("contato_id")]
+        public int ContatoId { get; set; }
 
-        [Column("media_mimetype")]
-        public string? MediaMimeType { get; set; }
+        [Column("data_envio")]
+        public DateTime? DataEnvio { get; set; }
 
-        [Column("media_filename")]
-        public string? MediaFilename { get; set; }
+        [Column("enviado")]
+        public bool Enviado { get; set; }
 
-        [Column("is_sent")]
-        public bool IsSent { get; set; }
+        [Column("lido")]
+        public bool Lido { get; set; }
 
-        [Column("from")]
-        public string From { get; set; }
+        [Column("WhatsAppMessageId")]
+        public string WhatsAppMessageId { get; set; }
 
-        [Column("to")]
-        public string To { get; set; }
+        [Column("is_official")]
+        public bool? IsOfficial { get; set; }
     }
 }

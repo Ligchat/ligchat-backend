@@ -100,5 +100,37 @@
                 _context.SaveChanges();
             }
         }
+
+        public bool TryDelete(int id, out string error)
+        {
+            var coluna = _context.Colunas.Find(id);
+            if (coluna == null)
+            {
+                error = "Coluna não encontrada";
+                return false;
+            }
+            var hasCards = _context.Cards.Any(c => c.ColumnId == id);
+            if (hasCards)
+            {
+                error = "Não é possível excluir a coluna pois existem cards associados a ela";
+                return false;
+            }
+            _context.Colunas.Remove(coluna);
+            _context.SaveChanges();
+            error = null;
+            return true;
+        }
+
+        public Coluna UpdateName(int id, string newName)
+        {
+            var coluna = _context.Colunas.Find(id);
+            if (coluna == null)
+            {
+                return null;
+            }
+            coluna.Name = newName;
+            _context.SaveChanges();
+            return coluna;
+        }
     }
 }

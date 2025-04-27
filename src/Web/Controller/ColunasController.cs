@@ -55,8 +55,11 @@ namespace tests_.src.Web.Controller
         [HttpDelete("{id}")]
         public IActionResult DeleteColuna(int id)
         {
-            _colunaService.Delete(id);
-            return NoContent();
+            if (_colunaService.TryDelete(id, out var error))
+            {
+                return NoContent();
+            }
+            return BadRequest(new { message = error });
         }
 
         [HttpPut("{id}/move")]
@@ -72,10 +75,29 @@ namespace tests_.src.Web.Controller
             return NoContent();
         }
 
+        [HttpPut("{id}/name")]
+        public IActionResult UpdateColunaName(int id, [FromBody] UpdateColunaNameRequest request)
+        {
+            if (request.Name == null || request.Name.Length > 27)
+            {
+                return BadRequest(new { message = "O nome da coluna deve ter no máximo 27 caracteres." });
+            }
+            var updated = _colunaService.UpdateName(id, request.Name);
+            if (updated == null)
+            {
+                return NotFound();
+            }
+            return Ok(new { id = updated.Id, name = updated.Name });
+        }
 
         public class MoveColunaRequest
         {
             public int NewPosition { get; set; }
+        }
+
+        public class UpdateColunaNameRequest
+        {
+            public string Name { get; set; }
         }
     }
 }

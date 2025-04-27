@@ -58,7 +58,7 @@
         // Obter mensagens por conexão (session_id)
         public async Task<List<Messeageging>> GetMessagesByConnectionId(int connectionId)
         {
-            return await _context.Messeageging.Where(m => m.WhatsappContactId == connectionId).ToListAsync();
+            return await _context.Messeageging.Where(m => m.ContatoId == connectionId).ToListAsync();
         }
 
         public async Task<WhatsAppIntegrationSettings> CreateSettingsAsync(CreateWhatsAppIntegrationSettingsDTO dto)

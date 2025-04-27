@@ -12,5 +12,8 @@
         void Delete(int id);
 
         void MoveColuna(int id, int newPosition);
+
+        bool TryDelete(int id, out string error);
+        Coluna UpdateName(int id, string newName);
     }
 }

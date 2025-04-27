@@ -9,6 +9,7 @@ using Microsoft.EntityFrameworkCore;
 using System.Collections.Generic;
 using tests_.src.Domain.DTOs.SectorDto;
 using tests_.src.Domain.Entities.LigChat.Backend.Domain.Entities;
+using LigChat.Backend.Web.Extensions.Database;
 
 namespace LigChat.Api.Services.SectorService
 {
@@ -16,11 +17,13 @@ namespace LigChat.Api.Services.SectorService
     {
         private readonly ISectorRepositoryInterface _sectorRepository;
         private readonly IUserSectorRepositoryInterface _userSectorRepository;
+        private readonly DatabaseConfiguration _context;
 
-        public SectorService(ISectorRepositoryInterface sectorRepository, IUserSectorRepositoryInterface userSectorRepository)
+        public SectorService(ISectorRepositoryInterface sectorRepository, IUserSectorRepositoryInterface userSectorRepository, DatabaseConfiguration context)
         {
             _sectorRepository = sectorRepository;
             _userSectorRepository = userSectorRepository;
+            _context = context;
         }
 
         /// <summary>
@@ -210,12 +213,80 @@ namespace LigChat.Api.Services.SectorService
 
         public SingleSectorResponse Delete(int sectorId)
         {
-            // Exclui todas as associações com o setor no `UserSector`
-            _userSectorRepository.Delete(sectorId);
+            // 1. Atualizar contatos do setor para remover tag_id
+            var contatos = _context.Contacts.Where(c => c.SectorId == sectorId).ToList();
+            foreach (var contato in contatos)
+            {
+                contato.TagId = null;
+            }
+            _context.SaveChanges();
 
-            return new SingleSectorResponse("Associations deleted successfully", "200", null);
+            // 2. Remover as tags do setor
+            var tags = _context.Tags.Where(t => t.SectorId == sectorId).ToList();
+            foreach (var tag in tags)
+            {
+                _context.Tags.Remove(tag);
+            }
+            _context.SaveChanges();
+
+            // 3. Remover os cards dos contatos do setor
+            var contatoIds = contatos.Select(c => c.Id).ToList();
+            var cards = _context.Cards.Where(card => contatoIds.Contains(card.ContactId ?? 0)).ToList();
+            foreach (var card in cards)
+            {
+                _context.Cards.Remove(card);
+            }
+            _context.SaveChanges();
+
+            // 4. Remover as colunas do setor
+            var colunas = _context.Colunas.Where(col => col.SectorId == sectorId).ToList();
+            foreach (var coluna in colunas)
+            {
+                _context.Colunas.Remove(coluna);
+            }
+            _context.SaveChanges();
+
+            // 5. Remover as mensagens dos contatos do setor
+            var mensagens = _context.Messeageging.Where(m => contatoIds.Contains(m.ContatoId)).ToList();
+            foreach (var mensagem in mensagens)
+            {
+                _context.Messeageging.Remove(mensagem);
+            }
+            _context.SaveChanges();
+
+            // 6. Remover os agentes do setor
+            var agentes = _context.Agents.Where(a => a.SectorId == sectorId).ToList();
+            foreach (var agente in agentes)
+            {
+                _context.Agents.Remove(agente);
+            }
+            _context.SaveChanges();
+
+            // 7. Remover os contatos do setor
+            foreach (var contato in contatos)
+            {
+                _context.Contacts.Remove(contato);
+            }
+            _context.SaveChanges();
+
+            // 8. Remover os registros de user_sectors associados ao setor
+            var userSectors = _context.UserSectors.Where(us => us.SectorId == sectorId).ToList();
+            foreach (var us in userSectors)
+            {
+                _context.UserSectors.Remove(us);
+            }
+            _context.SaveChanges();
+
+            // 9. Remover o setor
+            var setor = _context.Sectors.Find(sectorId);
+            if (setor != null)
+            {
+                _context.Sectors.Remove(setor);
+                _context.SaveChanges();
+            }
+
+            return new SingleSectorResponse("Sector and all related data deleted successfully", "200", null);
         }
-
 
         /// <summary>
         /// Verifica se um setor existe para um determinado usuário.

@@ -15,11 +15,10 @@ namespace Ligchat.Application.Services
             _context = context;
         }
 
-        public IEnumerable<Messeageging> GetAllByContactId(int whatsappContactId)
+        public IEnumerable<Messeageging> GetAllByContactId(int contatoId)
         {
-            // Implemente a lógica de busca das mensagens filtradas pelo whatsappContactId.
             return _context.Messeageging
-                .Where(m => m.WhatsappContactId == whatsappContactId)
+                .Where(m => m.ContatoId == contatoId)
                 .ToList();
         }
 
@@ -43,17 +42,18 @@ namespace Ligchat.Application.Services
                 return false;
             }
 
-            // Atualize as propriedades conforme necessário
-            existingMessage.Content = message.Content;
-            existingMessage.ProfilePicUrl = message.ProfilePicUrl;
-            existingMessage.Name = message.Name;
-            existingMessage.MessageType = message.MessageType;
-            existingMessage.MediaUrl = message.MediaUrl;
-            existingMessage.MediaMimeType = message.MediaMimeType;
-            existingMessage.MediaFilename = message.MediaFilename;
-            existingMessage.IsSent = message.IsSent;
-            existingMessage.From = message.From;
-            existingMessage.To = message.To;
+            existingMessage.Conteudo = message.Conteudo;
+            existingMessage.Tipo = message.Tipo;
+            existingMessage.Url = message.Url;
+            existingMessage.NomeArquivo = message.NomeArquivo;
+            existingMessage.MimeType = message.MimeType;
+            existingMessage.IdSetor = message.IdSetor;
+            existingMessage.ContatoId = message.ContatoId;
+            existingMessage.DataEnvio = message.DataEnvio;
+            existingMessage.Enviado = message.Enviado;
+            existingMessage.Lido = message.Lido;
+            existingMessage.WhatsAppMessageId = message.WhatsAppMessageId;
+            existingMessage.IsOfficial = message.IsOfficial;
 
             _context.Messeageging.Update(existingMessage);
             _context.SaveChanges();

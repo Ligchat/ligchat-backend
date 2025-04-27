@@ -4,16 +4,20 @@ using LigChat.Backend.Domain.Entities;
 using LigChat.Data.Interfaces.IRepositories;
 using LigChat.Data.Interfaces.IServices;
 using TagViewModel = LigChat.Backend.Application.Common.Mappings.TagActionResults.TagViewModel;
+using Microsoft.EntityFrameworkCore;
+using LigChat.Backend.Web.Extensions.Database;
 
 namespace LigChat.Api.Services.TagService
 {
     public class TagService : ITagServiceInterface
     {
         private readonly ITagRepositoryInterface _tagRepository;
+        private readonly DatabaseConfiguration _context;
 
-        public TagService(ITagRepositoryInterface tagRepository)
+        public TagService(ITagRepositoryInterface tagRepository, DatabaseConfiguration context)
         {
             _tagRepository = tagRepository;
+            _context = context;
         }
 
         public TagListResponse GetAll(int sectorId)
@@ -139,6 +143,13 @@ namespace LigChat.Api.Services.TagService
 
         public SingleTagResponse Delete(int id)
         {
+            var contatos = _context.Contacts.Where(c => c.TagId == id).ToList();
+            foreach (var contato in contatos)
+            {
+                contato.TagId = null;
+            }
+            _context.SaveChanges();
+
             var deletedTag = _tagRepository.Delete(id);
             if (deletedTag == null)
             {
