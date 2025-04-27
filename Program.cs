@@ -56,9 +56,10 @@ builder.Services.AddCors(options =>
         builder =>
         {
             builder
-                .AllowAnyOrigin()
+                .SetIsOriginAllowed(origin => true)
                 .AllowAnyMethod()
-                .AllowAnyHeader();
+                .AllowAnyHeader()
+                .AllowCredentials();
         });
 });
 
@@ -174,10 +175,11 @@ builder.Services.AddAutoMapper(typeof(MessageSchedulingProfile));
 
 var app = builder.Build();
 
+// Importante: Mover o CORS para antes de todas as outras middlewares
 app.UseCors("AllowAll");
 
 app.UseSwagger();
-    app.UseSwaggerUI();
+app.UseSwaggerUI();
 
 app.UseHttpsRedirection();
 app.UseAuthentication();
