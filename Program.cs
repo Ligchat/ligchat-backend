@@ -68,7 +68,14 @@ builder.Configuration
     .AddEnvironmentVariables();
 
 var jwtSettings = builder.Configuration.GetSection("Jwt");
-var key = Encoding.ASCII.GetBytes(jwtSettings["Key"]);
+var jwtKey = jwtSettings["Key"];
+
+if (string.IsNullOrEmpty(jwtKey))
+{
+    throw new InvalidOperationException("JWT Key is not configured. Please check your appsettings.json configuration.");
+}
+
+var key = Encoding.ASCII.GetBytes(jwtKey);
 
 // Add services to the container.
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
