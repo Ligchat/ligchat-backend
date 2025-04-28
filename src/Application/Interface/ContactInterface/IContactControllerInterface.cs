@@ -19,5 +19,8 @@ namespace LigChat.Backend.Application.Interface.ContactInterface
 
         // Deleta um contato baseado no ID. Deve retornar um IActionResult com o status da exclusão.
         IActionResult Delete(int id);
+
+        // Marca um contato como visto. Deve retornar um IActionResult com o status da operação.
+        IActionResult MarkAsViewed(int sectorId, int contactId);
     }
 }

@@ -129,6 +129,12 @@ namespace LigChat.Backend.Domain.Entities
         public string ContactStatus { get; set; } = "Novo";
 
         /// <summary>
+        /// Indica se o contato foi visualizado.
+        /// </summary>
+        [Column("is_viewed")]
+        public bool IsViewed { get; set; }
+
+        /// <summary>
         /// Construtor padrão da classe Contact.
         /// Inicializa as propriedades com valores padrão.
         /// </summary>

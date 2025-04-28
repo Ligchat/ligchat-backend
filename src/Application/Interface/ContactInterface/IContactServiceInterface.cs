@@ -30,5 +30,7 @@ namespace LigChat.Backend.Application.Interface.ContactInterface
         // Retorna um DTO SingleContactResponse com mensagem e código de status, indicando sucesso ou falha.
         // Se o contato não for encontrado, pode retornar nulo.
         SingleContactResponse Delete(int id);
+
+        void MarkAsViewed(int contactId, int sectorId);
     }
 }

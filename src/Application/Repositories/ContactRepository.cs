@@ -256,8 +256,19 @@ namespace LigChat.Backend.Application.Repositories
                 AiActive = c.AiActive,
                 CreatedAt = c.CreatedAt,
                 UpdatedAt = c.UpdatedAt,
-                IsOfficial = c.IsOfficial
+                IsOfficial = c.IsOfficial,
+                IsViewed = c.IsViewed
             };
+        }
+
+        public void MarkAsViewed(int contactId, int sectorId)
+        {
+            var contact = _context.Contacts.FirstOrDefault(c => c.Id == contactId && c.SectorId == sectorId);
+            if (contact != null)
+            {
+                contact.IsViewed = true;
+                _context.SaveChanges();
+            }
         }
     }
 }

@@ -124,5 +124,16 @@ namespace LigChat.Backend.Web.Controller
             
             return Ok(response);
         }
+
+        [HttpPost("mark-as-viewed")]
+        public IActionResult MarkAsViewed([FromQuery] int sectorId, [FromQuery] int contactId)
+        {
+            if (sectorId <= 0 || contactId <= 0)
+            {
+                return BadRequest("Invalid sectorId or contactId");
+            }
+            _contactService.MarkAsViewed(contactId, sectorId);
+            return Ok();
+        }
     }
 }

@@ -31,5 +31,8 @@ namespace LigChat.Backend.Application.Interface.ContactInterface
 
         // Deleta o contato correspondente ao ID e retorna o contato deletado.
         Contact Delete(int id);
+
+        // Marca um contato como visto recebendo id do contato e id do setor.
+        void MarkAsViewed(int contactId, int sectorId);
     }
 }
