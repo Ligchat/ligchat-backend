@@ -23,7 +23,7 @@ namespace LigChat.Backend.Domain.Entities
 
         [Column("data_envio")]
         [Required]
-        public string SendDate { get; set; }
+        public DateTime SendDate { get; set; }
 
         [Column("contato_id")]
         [Required]
@@ -53,7 +53,7 @@ namespace LigChat.Backend.Domain.Entities
             UpdatedAt = DateTime.UtcNow;
             Name = string.Empty;
             MessageText = string.Empty;
-            SendDate = string.Empty;
+            SendDate = DateTime.UtcNow;
             TagIds = string.Empty;
             Attachments = new List<MessageAttachment>();
         }
@@ -61,7 +61,7 @@ namespace LigChat.Backend.Domain.Entities
         public MessageScheduling(
             string name,
             string messageText,
-            string sendDate,
+            DateTime sendDate,
             int contactId,
             int sectorId,
             bool status = true,
@@ -69,7 +69,7 @@ namespace LigChat.Backend.Domain.Entities
         {
             Name = name ?? throw new ArgumentNullException(nameof(name));
             MessageText = messageText ?? throw new ArgumentNullException(nameof(messageText));
-            SendDate = sendDate ?? throw new ArgumentNullException(nameof(sendDate));
+            SendDate = sendDate;
             ContactId = contactId;
             SectorId = sectorId;
             Status = status;

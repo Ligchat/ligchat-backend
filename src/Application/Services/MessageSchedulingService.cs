@@ -189,6 +189,7 @@ namespace LigChat.Backend.Application.Services
         {
             try
             {
+                // 1. Carregar a mensagem existente
                 var existingMessage = await _repository.GetById(id);
                 if (existingMessage == null)
                 {
@@ -201,31 +202,91 @@ namespace LigChat.Backend.Application.Services
                     };
                 }
 
-                _mapper.Map(messageDto, existingMessage);
-
+                // 2. Deletar anexos antigos (se existirem)
+                if (existingMessage.Attachments != null && existingMessage.Attachments.Any())
+                {
+                    // Remover arquivos do S3
+                    foreach (var attachment in existingMessage.Attachments)
+                    {
+                        if (!string.IsNullOrEmpty(attachment.S3Url))
+                        {
+                            await _s3Service.DeleteFileAsync(attachment.S3Url);
+                        }
+                    }
+                    
+                    // Remover anexos do banco via SQL direto
+                    await _context.Database.ExecuteSqlRawAsync(
+                        "DELETE FROM mensagens_anexos WHERE mensagem_id = {0}", 
+                        existingMessage.Id);
+                }
+                
+                // 3. Desconectar a entidade do contexto para evitar problemas de rastreamento
+                _context.ChangeTracker.Clear();
+                
+                // 4. Atualizar a mensagem no banco via SQL direto
+                await _context.Database.ExecuteSqlRawAsync(
+                    @"UPDATE mensagens_agendadas 
+                    SET nome = {0}, mensagem_de_texto = {1}, data_envio = {2}, 
+                        contato_id = {3}, setor_id = {4}, status = {5}, 
+                        tag_id = {6}, data_atualizacao = {7}
+                    WHERE id = {8}",
+                    messageDto.Name,
+                    messageDto.MessageText,
+                    messageDto.SendDate,
+                    messageDto.ContactId,
+                    messageDto.SectorId,
+                    messageDto.Status,
+                    messageDto.TagIds ?? string.Empty,
+                    DateTime.UtcNow,
+                    id);
+                
+                // 5. Adicionar novos anexos (se enviados)
                 if (messageDto.Attachments != null && messageDto.Attachments.Any())
                 {
-                    foreach (var attachment in existingMessage.Attachments.ToList())
-                    {
-                        await _s3Service.DeleteFileAsync(attachment.S3Url);
-                    }
-                    existingMessage.Attachments.Clear();
-
                     foreach (var attachmentDto in messageDto.Attachments)
                     {
-                        string content = attachmentDto.Base64Content ?? attachmentDto.Data;
-                        if (string.IsNullOrEmpty(content))
+                        try
                         {
-                            continue;
+                            string content = attachmentDto.Base64Content ?? attachmentDto.Data;
+                            if (string.IsNullOrEmpty(content))
+                            {
+                                continue;
+                            }
+                            
+                            string s3Url;
+                            
+                            // Verificar se o conteúdo é uma URL existente ou um novo conteúdo base64
+                            if (content.StartsWith("http", StringComparison.OrdinalIgnoreCase))
+                            {
+                                // É um anexo existente, só reutilizar a URL
+                                s3Url = content;
+                            }
+                            else
+                            {
+                                // É um novo anexo, fazer upload
+                                s3Url = await _s3Service.UploadFileAsync(content, attachmentDto.Name, attachmentDto.Type);
+                            }
+                            
+                            var now = DateTime.UtcNow;
+                            
+                            // Inserir via SQL sem especificar ID
+                            await _context.Database.ExecuteSqlRawAsync(
+                                @"INSERT INTO mensagens_anexos 
+                                (mensagem_id, tipo, nome_arquivo, url_s3, data_criacao, data_atualizacao) 
+                                VALUES ({0}, {1}, {2}, {3}, {4}, {5})",
+                                id, attachmentDto.Type, attachmentDto.Name, 
+                                s3Url, now, now);
                         }
-
-                        var s3Url = await _s3Service.UploadFileAsync(content, attachmentDto.Name, attachmentDto.Type);
-                        var attachment = new MessageAttachment(attachmentDto.Type, attachmentDto.Name, s3Url);
-                        existingMessage.Attachments.Add(attachment);
+                        catch (Exception ex)
+                        {
+                            // Log do erro mas continuar para outros anexos
+                            Console.WriteLine($"Erro ao processar anexo '{attachmentDto.Name}': {ex.Message}");
+                        }
                     }
                 }
-
-                var updatedMessage = await _repository.Update(existingMessage);
+                
+                // 6. Recarregar a entidade com seus anexos
+                var updatedMessage = await _repository.GetById(id);
                 var viewModel = _mapper.Map<MessageSchedulingViewModel>(updatedMessage);
 
                 return new Response<MessageSchedulingViewModel>

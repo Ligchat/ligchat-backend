@@ -135,5 +135,16 @@ namespace LigChat.Backend.Web.Controller
             _contactService.MarkAsViewed(contactId, sectorId);
             return Ok();
         }
+
+        [HttpPatch("update-name")]
+        public IActionResult UpdateName([FromQuery] int contactId, [FromQuery] string newName)
+        {
+            if (contactId <= 0 || string.IsNullOrWhiteSpace(newName))
+            {
+                return BadRequest("Invalid contactId or newName");
+            }
+            _contactService.UpdateName(contactId, newName);
+            return Ok();
+        }
     }
 }

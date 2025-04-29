@@ -309,5 +309,15 @@ namespace LigChat.Backend.Application.Services
         {
             _contactRepository.MarkAsViewed(contactId, sectorId);
         }
+
+        public void UpdateName(int contactId, string newName)
+        {
+            var contact = _contactRepository.GetById(contactId);
+            if (contact != null && !string.IsNullOrWhiteSpace(newName))
+            {
+                contact.Name = newName;
+                _contactRepository.Update(contactId, contact);
+            }
+        }
     }
 }

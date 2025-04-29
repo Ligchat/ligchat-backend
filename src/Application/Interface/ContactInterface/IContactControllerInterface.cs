@@ -22,5 +22,8 @@ namespace LigChat.Backend.Application.Interface.ContactInterface
 
         // Marca um contato como visto. Deve retornar um IActionResult com o status da operação.
         IActionResult MarkAsViewed(int sectorId, int contactId);
+
+        // Atualiza o nome de um contato com base no ID e no novo nome. Deve retornar um IActionResult com o status da operação.
+        IActionResult UpdateName(int contactId, string newName);
     }
 }

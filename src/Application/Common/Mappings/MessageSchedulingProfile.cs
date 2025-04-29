@@ -9,7 +9,8 @@ namespace LigChat.Backend.Application.Common.Mappings
     {
         public MessageSchedulingProfile()
         {
-            CreateMap<MessageScheduling, MessageSchedulingViewModel>();
+            CreateMap<MessageScheduling, MessageSchedulingViewModel>()
+                .ForMember(dest => dest.SendDate, opt => opt.MapFrom(src => src.SendDate != null ? src.SendDate.ToString() : ""));
             CreateMap<MessageAttachment, MessageAttachmentViewModel>();
 
             CreateMap<CreateMessageSchedulingRequestDTO, MessageScheduling>()

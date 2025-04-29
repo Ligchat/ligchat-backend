@@ -32,5 +32,7 @@ namespace LigChat.Backend.Application.Interface.ContactInterface
         SingleContactResponse Delete(int id);
 
         void MarkAsViewed(int contactId, int sectorId);
+
+        void UpdateName(int contactId, string newName);
     }
 }
