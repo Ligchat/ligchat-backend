@@ -78,8 +78,11 @@ namespace LigChat.Backend.Application.Services
                 CreatedAt = c.CreatedAt,
                 UpdatedAt = c.UpdatedAt,
                 IsOfficial = c.IsOfficial,
-                IsViewed = c.IsViewed
-            }).ToList();
+                IsViewed = c.IsViewed,
+                Order = c.Order
+            })
+            .OrderBy(c => c.Order)
+            .ToList();
 
             return new ContactListResponse("Success", "200", contactDtos);
         }
@@ -113,7 +116,8 @@ namespace LigChat.Backend.Application.Services
                 CreatedAt = contact.CreatedAt,
                 UpdatedAt = contact.UpdatedAt,
                 IsOfficial = contact.IsOfficial,
-                IsViewed = contact.IsViewed
+                IsViewed = contact.IsViewed,
+                Order = contact.Order
             };
 
             return new SingleContactResponse("Success", "200", contactDto);
@@ -169,7 +173,8 @@ namespace LigChat.Backend.Application.Services
                 CreatedAt = savedContact.CreatedAt,
                 UpdatedAt = savedContact.UpdatedAt,
                 IsOfficial = savedContact.IsOfficial,
-                IsViewed = savedContact.IsViewed
+                IsViewed = savedContact.IsViewed,
+                Order = savedContact.Order
             };
 
             return new SingleContactResponse("Contact created successfully", "201", responseDto);
@@ -230,7 +235,8 @@ namespace LigChat.Backend.Application.Services
                 CreatedAt = savedContact.CreatedAt,
                 UpdatedAt = savedContact.UpdatedAt,
                 IsOfficial = savedContact.IsOfficial,
-                IsViewed = savedContact.IsViewed
+                IsViewed = savedContact.IsViewed,
+                Order = savedContact.Order
             };
 
             return new SingleContactResponse("Contact updated successfully", "200", responseDto);
@@ -267,7 +273,8 @@ namespace LigChat.Backend.Application.Services
                 CreatedAt = deletedContact.CreatedAt,
                 UpdatedAt = deletedContact.UpdatedAt,
                 IsOfficial = deletedContact.IsOfficial,
-                IsViewed = deletedContact.IsViewed
+                IsViewed = deletedContact.IsViewed,
+                Order = deletedContact.Order
             };
 
             return new SingleContactResponse("Contact deleted successfully", "200", responseDto);
@@ -299,8 +306,11 @@ namespace LigChat.Backend.Application.Services
                 CreatedAt = c.CreatedAt,
                 UpdatedAt = c.UpdatedAt,
                 IsOfficial = c.IsOfficial,
-                IsViewed = c.IsViewed
-            }).ToList();
+                IsViewed = c.IsViewed,
+                Order = c.Order
+            })
+            .OrderBy(c => c.Order)
+            .ToList();
 
             return new ContactListResponse("Success", "200", contactDtos);
         }

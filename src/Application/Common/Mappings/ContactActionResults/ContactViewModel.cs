@@ -61,6 +61,11 @@ namespace LigChat.Backend.Application.Common.Mappings.ContactActionResults
         public bool IsViewed { get; set; }
 
         /// <summary>
+        /// Ordem do contato para exibição, ordenado de forma ascendente por padrão.
+        /// </summary>
+        public int Order { get; set; }
+
+        /// <summary>
         /// Construtor padrão que inicializa as propriedades com valores padrão.
         /// </summary>
         public ContactViewModel()
@@ -82,12 +87,13 @@ namespace LigChat.Backend.Application.Common.Mappings.ContactActionResults
             UpdatedAt = DateTime.UtcNow;
             IsOfficial = false;
             IsViewed = false;
+            Order = 0;
         }
 
         /// <summary>
         /// Construtor para inicializar o DTO com valores específicos.
         /// </summary>
-        public ContactViewModel(int id, string name, int? tagId, string number, string? avatarUrl = null, string? email = null, string? notes = null, bool isActive = false, int? sectorId = null, string? priority = null, string contactStatus = "", int aiActive = 0, int? assignedTo = null, DateTime? createdAt = null, DateTime? updatedAt = null, bool isOfficial = false, bool isViewed = false)
+        public ContactViewModel(int id, string name, int? tagId, string number, string? avatarUrl = null, string? email = null, string? notes = null, bool isActive = false, int? sectorId = null, string? priority = null, string contactStatus = "", int aiActive = 0, int? assignedTo = null, DateTime? createdAt = null, DateTime? updatedAt = null, bool isOfficial = false, bool isViewed = false, int order = 0)
         {
             Id = id;
             Name = name;
@@ -106,6 +112,7 @@ namespace LigChat.Backend.Application.Common.Mappings.ContactActionResults
             UpdatedAt = updatedAt ?? DateTime.UtcNow;
             IsOfficial = isOfficial;
             IsViewed = isViewed;
+            Order = order;
         }
     }
 }

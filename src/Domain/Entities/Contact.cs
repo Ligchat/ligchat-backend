@@ -135,6 +135,12 @@ namespace LigChat.Backend.Domain.Entities
         public bool IsViewed { get; set; }
 
         /// <summary>
+        /// Ordem do contato para exibição. Ordenado em ordem ascendente por padrão.
+        /// </summary>
+        [Column("order")]
+        public int Order { get; set; } = 0;
+
+        /// <summary>
         /// Construtor padrão da classe Contact.
         /// Inicializa as propriedades com valores padrão.
         /// </summary>
@@ -148,6 +154,7 @@ namespace LigChat.Backend.Domain.Entities
             CreatedAt = DateTime.UtcNow;
             UpdatedAt = DateTime.UtcNow;
             IsOfficial = false;
+            Order = 0;
         }
 
         /// <summary>
@@ -183,6 +190,7 @@ namespace LigChat.Backend.Domain.Entities
             CreatedAt = DateTime.UtcNow;
             UpdatedAt = DateTime.UtcNow;
             IsOfficial = false;
+            Order = 0;
         }
     }
 }

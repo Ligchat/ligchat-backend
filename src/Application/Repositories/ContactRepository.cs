@@ -257,7 +257,8 @@ namespace LigChat.Backend.Application.Repositories
                 CreatedAt = c.CreatedAt,
                 UpdatedAt = c.UpdatedAt,
                 IsOfficial = c.IsOfficial,
-                IsViewed = c.IsViewed
+                IsViewed = c.IsViewed,
+                Order = c.Order
             };
         }
 
