@@ -168,30 +168,63 @@ namespace LigChat.Com.Api.Mvc.UserMvc.Service
                 return new SingleUserResponse("Invalid request", "400", null);
             }
 
-            var user = new User
-            {
-                Name = userDto.Name,
-                Email = userDto.Email,
-                PhoneWhatsapp = userDto.PhoneWhatsapp,
-                AvatarUrl = userDto.AvatarUrl,
-                IsAdmin = userDto.IsAdmin,
-                Status = userDto.Status,
-                InvitedBy = userDto.InvitedBy // Atribui o ID do convidador
-            };
+            // 1. Verifica se o usuário já existe pelo e-mail
+            var existingUser = _userRepository.GetByEmail(userDto.Email);
 
-            var savedUser = _userRepository.Add(user);
+            User user;
+            if (existingUser != null)
+            {
+                user = existingUser;
+            }
+            else
+            {
+                // Cria o usuário normalmente
+                user = new User
+                {
+                    Name = userDto.Name,
+                    Email = userDto.Email,
+                    PhoneWhatsapp = userDto.PhoneWhatsapp,
+                    AvatarUrl = userDto.AvatarUrl,
+                    IsAdmin = userDto.IsAdmin,
+                    Status = userDto.Status,
+                    InvitedBy = userDto.InvitedBy
+                };
+                user = _userRepository.Add(user);
+            }
+
+            // 2. Associa o usuário aos setores informados
+            if (userDto.Sectors != null)
+            {
+                var currentAssociations = _userSector.GetAllByUserId(user.Id).ToList();
+                foreach (var sector in userDto.Sectors)
+                {
+                    // Verifica se já existe a associação
+                    var alreadyAssociated = currentAssociations.Any(us => us.SectorId == sector.Id);
+                    if (!alreadyAssociated)
+                    {
+                        var userSector = new UserSector
+                        {
+                            UserId = user.Id,
+                            SectorId = sector.Id,
+                            IsShared = sector.IsShared
+                        };
+                        _userSector.Save(userSector);
+                    }
+                }
+            }
 
             var responseDto = new UserViewModel(
-                savedUser.Id,
-                savedUser.Name,
-                savedUser.Email,
-                savedUser.PhoneWhatsapp,
-                savedUser.AvatarUrl,
-                savedUser.IsAdmin,
-                savedUser.Status
+                user.Id,
+                user.Name,
+                user.Email,
+                user.PhoneWhatsapp,
+                user.AvatarUrl,
+                user.IsAdmin,
+                user.Status,
+                user.InvitedBy
             );
 
-            return new SingleUserResponse("User created successfully", "201", responseDto);
+            return new SingleUserResponse("User created or associated successfully", "201", responseDto);
         }
 
         public SingleUserResponse Update(int id, UpdateUserRequestDTO userDto)
@@ -225,22 +258,35 @@ namespace LigChat.Com.Api.Mvc.UserMvc.Service
 
             var savedUser = _userRepository.Update(existingUser);
 
-            // Atualiza os setores do usuário
+            // Atualiza os setores do usuário de forma incremental e segura
             if (userDto.Sectors != null)
             {
-                // Remove todos os setores atuais do usuário
-                _userSector.DeleteAllByUserId(savedUser.Id);
+                var currentAssociations = _userSector.GetAllByUserId(savedUser.Id).ToList();
+                var currentSectorIds = currentAssociations.Select(us => us.SectorId).ToList();
+                var newSectorIds = userDto.Sectors.Select(s => s.Id).ToList();
 
-                // Adiciona os novos setores
+                // Adiciona novas associações que não existem
                 foreach (var sector in userDto.Sectors)
                 {
-                    var userSector = new UserSector
+                    if (!currentSectorIds.Contains(sector.Id))
                     {
-                        UserId = savedUser.Id,
-                        SectorId = sector.Id,
-                        IsShared = true
-                    };
-                    _userSector.Save(userSector);
+                        var userSector = new UserSector
+                        {
+                            UserId = savedUser.Id,
+                            SectorId = sector.Id,
+                            IsShared = sector.IsShared
+                        };
+                        _userSector.Save(userSector);
+                    }
+                }
+
+                // Remove associações que não estão mais no DTO
+                foreach (var association in currentAssociations)
+                {
+                    if (!newSectorIds.Contains(association.SectorId))
+                    {
+                        _userSector.Delete(association.Id);
+                    }
                 }
             }
 
@@ -328,6 +374,17 @@ namespace LigChat.Com.Api.Mvc.UserMvc.Service
             catch (Exception ex)
             {
                 throw new Exception("Failed to upload image to S3", ex);
+            }
+        }
+
+        // Remove apenas a associação do usuário com o setor, sem deletar o usuário
+        public void RemoveUserFromSector(int userId, int sectorId)
+        {
+            var associations = _userSector.GetAllByUserId(userId);
+            var association = associations.FirstOrDefault(us => us.SectorId == sectorId);
+            if (association != null)
+            {
+                _userSector.Delete(association.Id);
             }
         }
     }

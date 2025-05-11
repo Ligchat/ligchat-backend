@@ -99,6 +99,15 @@ namespace LigChat.Backend.Application.Repositories
 
             if (user != null)
             {
+                // Remove todas as associações UserSector do usuário
+                var userSectors = _context.UserSectors.Where(us => us.UserId == id).ToList();
+                if (userSectors.Any())
+                {
+                    _context.UserSectors.RemoveRange(userSectors);
+                }
+
+                // Se houver outras entidades dependentes, remova aqui também
+
                 _context.Users.Remove(user); // Remove o usuário do DbSet
                 _context.SaveChanges(); // Salva as alterações no banco de dados
                 return user; // Retorna o usuário deletado
