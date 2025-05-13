@@ -174,8 +174,29 @@ namespace LigChat.Backend.Web.Controller
             return Ok(updatedUserResponse);
         }
 
-        [HttpPut("profile")]
+        [HttpGet]
         [Authorize]
+        [Route("profile")]
+        public IActionResult GetCurrentUserProfile()
+        {
+            var userId = GetUserIdFromClaims();
+            if (!userId.HasValue)
+            {
+                return Unauthorized(new { Message = "Invalid token or missing user ID." });
+            }
+
+            var profileResponse = _userService.GetProfile(userId.Value);
+            if (profileResponse.Code == "404")
+            {
+                return NotFound(profileResponse);
+            }
+
+            return Ok(profileResponse);
+        }
+
+        [HttpPut]
+        [Authorize]
+        [Route("profile")]
         public IActionResult UpdateCurrentUserProfile([FromBody] UpdateProfileRequestDTO profileDto)
         {
             if (profileDto == null)

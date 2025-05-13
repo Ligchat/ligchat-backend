@@ -454,5 +454,24 @@ namespace LigChat.Com.Api.Mvc.UserMvc.Service
                 _userSector.Delete(association.Id);
             }
         }
+
+        public ProfileResponse GetProfile(int id)
+        {
+            var user = _userRepository.GetById(id);
+            if (user == null)
+            {
+                return new ProfileResponse("User not found", "404", null);
+            }
+
+            var profileDto = new ProfileResponseDTO(
+                user.Id,
+                user.Name,
+                user.Email,
+                user.PhoneWhatsapp,
+                user.AvatarUrl
+            );
+
+            return new ProfileResponse("Success", "200", profileDto);
+        }
     }
 }

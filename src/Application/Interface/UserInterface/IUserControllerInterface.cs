@@ -17,6 +17,9 @@ namespace LigChat.Backend.Application.Interface.UserInterface
         // Atualiza um usuário existente com base no ID e no UpdateUserRequestDTO. Deve retornar um IActionResult com o status da atualização.
         IActionResult Update(int id, UpdateUserRequestDTO user);
 
+        // Retorna os dados do perfil do usuário atual, identificado pelo token JWT.
+        IActionResult GetCurrentUserProfile();
+
         // Atualiza apenas o perfil básico do usuário atual (identificado pelo token JWT). Deve retornar um IActionResult com o status da atualização.
         IActionResult UpdateCurrentUserProfile(UpdateProfileRequestDTO profileDto);
 
