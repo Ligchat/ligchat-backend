@@ -61,7 +61,7 @@ namespace LigChat.Backend.Domain.DTOs.ContactDto
         /// <summary>
         /// Identificador do setor associado ao contato.
         /// </summary>
-        public int AiActive { get; set; } = 1;
+        public int? AiActive { get; set; }
 
         /// <summary>
         /// Identificador do setor associado ao contato.
@@ -104,7 +104,7 @@ namespace LigChat.Backend.Domain.DTOs.ContactDto
             string? notes = null,
             int sectorId = 0,
             bool isActive = true,
-            int aiActive = 1,
+            int? aiActive = null,
             int? assignedTo = null,
             string? priority = "normal",
             bool isOfficial = false)

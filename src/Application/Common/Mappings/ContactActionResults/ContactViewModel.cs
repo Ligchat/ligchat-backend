@@ -39,7 +39,7 @@ namespace LigChat.Backend.Application.Common.Mappings.ContactActionResults
         public string? ContactStatus { get; set; }
 
         // Identificador do contato no AI
-        public int AiActive { get; set; }
+        public int? AiActive { get; set; }
 
         // Identificador do usuário atribuído ao contato
         public int? AssignedTo { get; set; }
@@ -81,7 +81,7 @@ namespace LigChat.Backend.Application.Common.Mappings.ContactActionResults
             SectorId = null;
             Priority = null;
             ContactStatus = null;
-            AiActive = 0;
+            AiActive = null;
             AssignedTo = null;
             CreatedAt = DateTime.UtcNow;
             UpdatedAt = DateTime.UtcNow;
@@ -93,7 +93,7 @@ namespace LigChat.Backend.Application.Common.Mappings.ContactActionResults
         /// <summary>
         /// Construtor para inicializar o DTO com valores específicos.
         /// </summary>
-        public ContactViewModel(int id, string name, int? tagId, string number, string? avatarUrl = null, string? email = null, string? notes = null, bool isActive = false, int? sectorId = null, string? priority = null, string contactStatus = "", int aiActive = 0, int? assignedTo = null, DateTime? createdAt = null, DateTime? updatedAt = null, bool isOfficial = false, bool isViewed = false, int order = 0)
+        public ContactViewModel(int id, string name, int? tagId, string number, string? avatarUrl = null, string? email = null, string? notes = null, bool isActive = false, int? sectorId = null, string? priority = null, string contactStatus = "", int? aiActive = null, int? assignedTo = null, DateTime? createdAt = null, DateTime? updatedAt = null, bool isOfficial = false, bool isViewed = false, int order = 0)
         {
             Id = id;
             Name = name;

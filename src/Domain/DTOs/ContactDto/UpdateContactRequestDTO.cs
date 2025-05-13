@@ -65,7 +65,7 @@ namespace LigChat.Backend.Domain.DTOs.ContactDto
         /// <summary>
         /// Ativo artificial do contato.
         /// </summary>
-        public int AiActive { get; set; } = 1;
+        public int? AiActive { get; set; }
 
         /// <summary>
         /// Identificador do usuário atribuído ao contato.
@@ -103,7 +103,7 @@ namespace LigChat.Backend.Domain.DTOs.ContactDto
             int? sectorId = null,
             bool isActive = true,
             string? priority = "normal",
-            int aiActive = 1,
+            int? aiActive = null,
             int? assignedTo = null,
             bool isOfficial = false)
         {

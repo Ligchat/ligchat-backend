@@ -70,8 +70,8 @@ namespace LigChat.Backend.Application.Services
                 Email = c.Email ?? string.Empty,
                 Notes = c.Notes,
                 IsActive = c.IsActive,
-                Priority = c.Priority,
-                ContactStatus = c.ContactStatus,
+                Priority = c.Priority ?? "normal",
+                ContactStatus = c.ContactStatus ?? "Novo",
                 SectorId = c.SectorId,
                 AiActive = c.AiActive,
                 AssignedTo = c.AssignedTo,
@@ -108,8 +108,8 @@ namespace LigChat.Backend.Application.Services
                 Email = contact.Email ?? string.Empty,
                 Notes = contact.Notes,
                 IsActive = contact.IsActive,
-                Priority = contact.Priority,
-                ContactStatus = contact.ContactStatus,
+                Priority = contact.Priority ?? "normal",
+                ContactStatus = contact.ContactStatus ?? "Novo",
                 SectorId = contact.SectorId,
                 AiActive = contact.AiActive,
                 AssignedTo = contact.AssignedTo,
@@ -165,8 +165,8 @@ namespace LigChat.Backend.Application.Services
                 Email = savedContact.Email ?? string.Empty,
                 Notes = savedContact.Notes,
                 IsActive = savedContact.IsActive,
-                Priority = savedContact.Priority,
-                ContactStatus = savedContact.ContactStatus,
+                Priority = savedContact.Priority ?? "normal",
+                ContactStatus = savedContact.ContactStatus ?? "Novo",
                 SectorId = savedContact.SectorId,
                 AiActive = savedContact.AiActive,
                 AssignedTo = savedContact.AssignedTo,
@@ -207,7 +207,7 @@ namespace LigChat.Backend.Application.Services
             existingContact.IsActive = contactDto.IsActive;
             existingContact.SectorId = contactDto.SectorId ?? existingContact.SectorId;
             existingContact.AvatarUrl = contactDto.AvatarUrl;
-            existingContact.Priority = contactDto.Priority;
+            existingContact.Priority = contactDto.Priority ?? "normal";
             existingContact.AiActive = contactDto.AiActive;
             existingContact.AssignedTo = contactDto.AssignedTo ?? existingContact.AssignedTo;
             existingContact.UpdatedAt = DateTime.UtcNow;
@@ -227,8 +227,8 @@ namespace LigChat.Backend.Application.Services
                 Email = savedContact.Email ?? string.Empty,
                 Notes = savedContact.Notes,
                 IsActive = savedContact.IsActive,
-                Priority = savedContact.Priority,
-                ContactStatus = savedContact.ContactStatus,
+                Priority = savedContact.Priority ?? "normal",
+                ContactStatus = savedContact.ContactStatus ?? "Novo",
                 SectorId = savedContact.SectorId,
                 AiActive = savedContact.AiActive,
                 AssignedTo = savedContact.AssignedTo,
@@ -265,8 +265,8 @@ namespace LigChat.Backend.Application.Services
                 Email = deletedContact.Email ?? string.Empty,
                 Notes = deletedContact.Notes,
                 IsActive = deletedContact.IsActive,
-                Priority = deletedContact.Priority,
-                ContactStatus = deletedContact.ContactStatus,
+                Priority = deletedContact.Priority ?? "normal",
+                ContactStatus = deletedContact.ContactStatus ?? "Novo",
                 SectorId = deletedContact.SectorId,
                 AiActive = deletedContact.AiActive,
                 AssignedTo = deletedContact.AssignedTo,
@@ -298,8 +298,8 @@ namespace LigChat.Backend.Application.Services
                 Email = c.Email ?? string.Empty,
                 Notes = c.Notes,
                 IsActive = c.IsActive,
-                Priority = c.Priority,
-                ContactStatus = c.ContactStatus,
+                Priority = c.Priority ?? "normal",
+                ContactStatus = c.ContactStatus ?? "Novo",
                 SectorId = c.SectorId,
                 AiActive = c.AiActive,
                 AssignedTo = c.AssignedTo,

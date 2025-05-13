@@ -5,6 +5,7 @@ using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.IO;
 
 namespace LigChat.Backend.Application.Repositories
 {
@@ -14,6 +15,19 @@ namespace LigChat.Backend.Application.Repositories
     public class ContactRepository : IContactRepositoryInterface, IDisposable
     {
         private readonly DatabaseConfiguration _context;
+        private readonly string _logFilePath = "contact_error_log.txt";
+
+        private void LogToFile(string message)
+        {
+            try
+            {
+                File.AppendAllText(_logFilePath, $"[{DateTime.Now}] {message}{Environment.NewLine}");
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error writing to log file: {ex.Message}");
+            }
+        }
 
         /// <summary>
         /// Construtor que recebe o contexto do banco de dados.
@@ -22,6 +36,11 @@ namespace LigChat.Backend.Application.Repositories
         public ContactRepository(DatabaseConfiguration context)
         {
             _context = context ?? throw new ArgumentNullException(nameof(context)); // Garante que o contexto não seja nulo
+
+            // Iniciar arquivo de log
+            LogToFile("----------------------------------------------------------------");
+            LogToFile("Contact Repository Log Started");
+            LogToFile("----------------------------------------------------------------");
         }
 
         /// <summary>
@@ -137,50 +156,152 @@ namespace LigChat.Backend.Application.Repositories
         {
             try
             {
-                Console.WriteLine($"Iniciando GetBySectorId com sectorId: {sectorId}");
+                LogToFile($"Iniciando GetBySectorId com sectorId: {sectorId}");
 
+                // First try to get the raw data without mapping to identify possible nullable issues
+                LogToFile("Attempting to get raw data from database first...");
+                
+                // Antes da query normal, vamos corrigir quaisquer registros com Order NULL
+                try
+                {
+                    LogToFile("Checking for contacts with NULL order values...");
+                    
+                    // Abordagem segura usando SQL direto para identificar contatos com Order NULL
+                    var connection = _context.Database.GetDbConnection();
+                    if (connection.State != System.Data.ConnectionState.Open)
+                        connection.Open();
+                    
+                    List<int> contactsWithNullOrder = new List<int>();
+                    
+                    using (var command = connection.CreateCommand())
+                    {
+                        command.CommandText = "SELECT id FROM contacts WHERE sector_id = @sectorId AND `order` IS NULL";
+                        var param = command.CreateParameter();
+                        param.ParameterName = "@sectorId";
+                        param.Value = sectorId;
+                        command.Parameters.Add(param);
+                        
+                        using (var reader = command.ExecuteReader())
+                        {
+                            while (reader.Read())
+                            {
+                                contactsWithNullOrder.Add(reader.GetInt32(0));
+                            }
+                        }
+                    }
+                    
+                    if (contactsWithNullOrder.Count > 0)
+                    {
+                        LogToFile($"Found {contactsWithNullOrder.Count} contacts with NULL order values. Fixing them...");
+                        
+                        // Encontrar o maior valor de Order para este setor
+                        int maxOrder = 0;
+                        using (var command = connection.CreateCommand())
+                        {
+                            command.CommandText = "SELECT IFNULL(MAX(`order`), 0) FROM contacts WHERE sector_id = @sectorId AND `order` IS NOT NULL";
+                            var param = command.CreateParameter();
+                            param.ParameterName = "@sectorId";
+                            param.Value = sectorId;
+                            command.Parameters.Add(param);
+                            
+                            var result = command.ExecuteScalar();
+                            if (result != null && result != DBNull.Value)
+                            {
+                                maxOrder = Convert.ToInt32(result);
+                            }
+                        }
+                        
+                        LogToFile($"Current max order value: {maxOrder}");
+                        
+                        // Atualizar cada contato com Order NULL
+                        foreach (var contactId in contactsWithNullOrder)
+                        {
+                            maxOrder++;
+                            
+                            using (var command = connection.CreateCommand())
+                            {
+                                command.CommandText = "UPDATE contacts SET `order` = @newOrder WHERE id = @contactId";
+                                
+                                var orderParam = command.CreateParameter();
+                                orderParam.ParameterName = "@newOrder";
+                                orderParam.Value = maxOrder;
+                                command.Parameters.Add(orderParam);
+                                
+                                var idParam = command.CreateParameter();
+                                idParam.ParameterName = "@contactId";
+                                idParam.Value = contactId;
+                                command.Parameters.Add(idParam);
+                                
+                                int rowsAffected = command.ExecuteNonQuery();
+                                LogToFile($"Updated contact ID {contactId} with order value {maxOrder}. Rows affected: {rowsAffected}");
+                            }
+                        }
+                    }
+                    else
+                    {
+                        LogToFile("No contacts with NULL order values found.");
+                    }
+                }
+                catch (Exception ex)
+                {
+                    LogToFile($"Error checking/fixing NULL order values: {ex.Message}");
+                    LogToFile($"StackTrace: {ex.StackTrace}");
+                }
+                
+                // Agora execute a query Entity Framework normalmente
                 var query = _context.Contacts
                     .IgnoreAutoIncludes()
                     .Where(c => c.SectorId == sectorId)
                     .AsNoTracking();
 
-                // Log da query SQL
+                // Log the SQL query
                 var sql = query.ToQueryString();
-                Console.WriteLine($"Query SQL gerada: {sql}");
-
-                // Log dos parâmetros da query
-                Console.WriteLine("Parâmetros da query:");
-                foreach (var parameter in _context.Database.GetDbConnection().ConnectionString.Split(';'))
-                {
-                    Console.WriteLine(parameter);
-                }
+                LogToFile($"Generated SQL: {sql}");
 
                 try
                 {
-                    var result = query.Select(MapContact).ToList();
-                    Console.WriteLine($"Query executada com sucesso. Número de registros: {result.Count}");
+                    LogToFile("Executing query with manual Select and mapping...");
+                    // Use ToList to materialize in memory before mapping
+                    var entityList = query.ToList();
+                    LogToFile($"Successfully fetched {entityList.Count} entities from database");
                     
-                    // Log detalhado dos resultados
-                    foreach (var contact in result)
+                    var result = new List<Contact>();
+                    foreach (var entity in entityList)
                     {
-                        Console.WriteLine($"Contact: Id={contact.Id}, Name={contact.Name}, SectorId={contact.SectorId}, TagId={contact.TagId}, AiActive={contact.AiActive}");
+                        try {
+                            LogToFile($"Mapping contact: Id={entity.Id}, Name={entity.Name}");
+                            LogToFile($"  TagId={entity.TagId?.ToString() ?? "NULL"}");
+                            LogToFile($"  AiActive={entity.AiActive?.ToString() ?? "NULL"}");
+                            LogToFile($"  Order={entity.Order}");
+                            
+                            var mappedContact = MapContact(entity);
+                            result.Add(mappedContact);
+                            LogToFile($"Successfully mapped contact Id={entity.Id}");
+                        }
+                        catch (Exception ex) {
+                            LogToFile($"ERROR mapping contact Id={entity.Id}: {ex.Message}");
+                            LogToFile($"Exception Type: {ex.GetType().FullName}");
+                            LogToFile($"Stack Trace: {ex.StackTrace}");
+                            // Continue with next contact instead of failing whole query
+                        }
                     }
-
+                    
+                    LogToFile($"Query executed successfully. Number of mapped records: {result.Count}");
                     return result;
                 }
                 catch (Exception ex)
                 {
-                    Console.WriteLine("Erro ao executar a query:");
-                    Console.WriteLine($"Tipo de exceção: {ex.GetType().FullName}");
-                    Console.WriteLine($"Mensagem: {ex.Message}");
-                    Console.WriteLine($"StackTrace: {ex.StackTrace}");
+                    LogToFile("Error when executing the query:");
+                    LogToFile($"Exception type: {ex.GetType().FullName}");
+                    LogToFile($"Message: {ex.Message}");
+                    LogToFile($"StackTrace: {ex.StackTrace}");
 
                     if (ex.InnerException != null)
                     {
-                        Console.WriteLine("Inner Exception:");
-                        Console.WriteLine($"Tipo: {ex.InnerException.GetType().FullName}");
-                        Console.WriteLine($"Mensagem: {ex.InnerException.Message}");
-                        Console.WriteLine($"StackTrace: {ex.InnerException.StackTrace}");
+                        LogToFile("Inner Exception:");
+                        LogToFile($"Type: {ex.InnerException.GetType().FullName}");
+                        LogToFile($"Message: {ex.InnerException.Message}");
+                        LogToFile($"StackTrace: {ex.InnerException.StackTrace}");
                     }
 
                     throw;
@@ -188,12 +309,12 @@ namespace LigChat.Backend.Application.Repositories
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"Erro geral em GetBySectorId: {ex.Message}");
-                Console.WriteLine($"StackTrace: {ex.StackTrace}");
+                LogToFile($"General error in GetBySectorId: {ex.Message}");
+                LogToFile($"StackTrace: {ex.StackTrace}");
                 if (ex.InnerException != null)
                 {
-                    Console.WriteLine($"Inner Exception: {ex.InnerException.Message}");
-                    Console.WriteLine($"Inner StackTrace: {ex.InnerException.StackTrace}");
+                    LogToFile($"Inner Exception: {ex.InnerException.Message}");
+                    LogToFile($"Inner StackTrace: {ex.InnerException.StackTrace}");
                 }
                 throw;
             }
@@ -239,27 +360,48 @@ namespace LigChat.Backend.Application.Repositories
 
         private Contact MapContact(Contact c)
         {
-            return new Contact
+            try 
             {
-                Id = c.Id,
-                Name = c.Name,
-                Number = c.Number,
-                AvatarUrl = c.AvatarUrl,
-                Email = c.Email,
-                Notes = c.Notes,
-                IsActive = c.IsActive,
-                Priority = c.Priority,
-                ContactStatus = c.ContactStatus,
-                AssignedTo = c.AssignedTo,
-                TagId = c.TagId,
-                SectorId = c.SectorId,
-                AiActive = c.AiActive,
-                CreatedAt = c.CreatedAt,
-                UpdatedAt = c.UpdatedAt,
-                IsOfficial = c.IsOfficial,
-                IsViewed = c.IsViewed,
-                Order = c.Order
-            };
+                // Log individual field values to identify NULL issues
+                LogToFile($"Processing Contact: Id={c.Id}, Name={c.Name}");
+                LogToFile($"  SectorId={c.SectorId}, TagId={c.TagId?.ToString() ?? "NULL"}");
+                LogToFile($"  AiActive raw value: {(c.AiActive.HasValue ? c.AiActive.ToString() : "NULL")}");
+                
+                return new Contact
+                {
+                    Id = c.Id,
+                    Name = c.Name,
+                    Number = c.Number,
+                    AvatarUrl = c.AvatarUrl,
+                    Email = c.Email,
+                    Notes = c.Notes,
+                    IsActive = c.IsActive,
+                    Priority = c.Priority ?? "normal",
+                    ContactStatus = c.ContactStatus ?? "Novo",
+                    AssignedTo = c.AssignedTo,
+                    TagId = c.TagId,
+                    SectorId = c.SectorId,
+                    AiActive = c.AiActive, // Use the nullable value directly without default
+                    CreatedAt = c.CreatedAt,
+                    UpdatedAt = c.UpdatedAt,
+                    IsOfficial = c.IsOfficial,
+                    IsViewed = c.IsViewed,
+                    Order = c.Order
+                };
+            }
+            catch (Exception ex)
+            {
+                LogToFile($"ERROR in MapContact for ID={c.Id}, Name={c.Name}");
+                LogToFile($"Exception: {ex.GetType().FullName} - {ex.Message}");
+                
+                if (ex.Message.Contains("NULL") && ex.Message.Contains("Int32"))
+                {
+                    LogToFile($"CRITICAL: NULL to Int32 conversion error detected!");
+                    LogToFile($"AiActive raw value: {(c.AiActive.HasValue ? c.AiActive.ToString() : "NULL")}");
+                }
+                
+                throw;
+            }
         }
 
         public void MarkAsViewed(int contactId, int sectorId)

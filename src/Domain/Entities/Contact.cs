@@ -100,9 +100,8 @@ namespace LigChat.Backend.Domain.Entities
         /// <summary>
         /// Indica se o contato é ativo no sistema de inteligência artificial.
         /// </summary>
-        [Required]
         [Column("ai_active")]
-        public int AiActive { get; set; } = 1;
+        public int? AiActive { get; set; }
 
         /// <summary>
         /// Identificador do usuário atribuído ao contato.

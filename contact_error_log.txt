@@ -1,0 +1,560 @@
+[13/05/2025 13:36:01] ----------------------------------------------------------------
+[13/05/2025 13:36:01] Contact Repository Log Started
+[13/05/2025 13:36:01] ----------------------------------------------------------------
+[13/05/2025 13:36:01] Iniciando GetBySectorId com sectorId: 25
+[13/05/2025 13:36:01] Attempting to get raw data from database first...
+[13/05/2025 13:36:03] Error retrieving raw data: Can't convert NULL to Int32
+[13/05/2025 13:36:03] StackTrace:    at MySqlConnector.Core.Row.GetInt32(Int32 ordinal) in /_/src/MySqlConnector/Core/Row.cs:line 240
+   at MySqlConnector.MySqlDataReader.GetInt32(Int32 ordinal) in /_/src/MySqlConnector/MySqlDataReader.cs:line 240
+   at lambda_method28(Closure, QueryContext, DbDataReader, ResultContext, SingleQueryResultCoordinator)
+   at Microsoft.EntityFrameworkCore.Query.Internal.SingleQueryingEnumerable`1.Enumerator.MoveNext()
+   at System.Collections.Generic.List`1..ctor(IEnumerable`1 collection)
+   at System.Linq.Enumerable.ToList[TSource](IEnumerable`1 source)
+   at LigChat.Backend.Application.Repositories.ContactRepository.GetBySectorId(Int32 sectorId) in C:\Users\gusta\Videos\Projetos\LigChat\lig\ligchat-backend\src\Application\Repositories\ContactRepository.cs:line 164
+[13/05/2025 13:36:03] Executing raw SQL query for diagnostic purposes...
+[13/05/2025 13:36:04] Raw SQL query results:
+[13/05/2025 13:36:04]   Id=413, Name=Wainer Fortes
+[13/05/2025 13:36:04]   tag_id=NULL
+[13/05/2025 13:36:04]   ai_active=1
+[13/05/2025 13:36:04]   Id=422, Name=Recepção Wainer Fortes Advocacia
+[13/05/2025 13:36:04]   tag_id=NULL
+[13/05/2025 13:36:04]   ai_active=0
+[13/05/2025 13:36:04]   Id=427, Name=Amanda Azevedo
+[13/05/2025 13:36:04]   tag_id=NULL
+[13/05/2025 13:36:04]   ai_active=1
+[13/05/2025 13:36:04]   Id=429, Name=Paulinho Skol
+[13/05/2025 13:36:04]   tag_id=NULL
+[13/05/2025 13:36:04]   ai_active=1
+[13/05/2025 13:36:04]   Id=500, Name=Maria Abadia 
+[13/05/2025 13:36:04]   tag_id=NULL
+[13/05/2025 13:36:04]   ai_active=1
+[13/05/2025 13:36:04]   Id=501, Name=André Galáxia 
+[13/05/2025 13:36:04]   tag_id=NULL
+[13/05/2025 13:36:04]   ai_active=1
+[13/05/2025 13:36:04]   Id=502, Name=Ivanilda
+[13/05/2025 13:36:04]   tag_id=NULL
+[13/05/2025 13:36:04]   ai_active=1
+[13/05/2025 13:36:04]   Id=503, Name=Jorlan
+[13/05/2025 13:36:04]   tag_id=NULL
+[13/05/2025 13:36:04]   ai_active=1
+[13/05/2025 13:36:04]   Id=504, Name=🙏🏻
+[13/05/2025 13:36:04]   tag_id=NULL
+[13/05/2025 13:36:04]   ai_active=1
+[13/05/2025 13:36:04]   Id=609, Name=Milton Pupio
+[13/05/2025 13:36:04]   tag_id=NULL
+[13/05/2025 13:36:04]   ai_active=1
+[13/05/2025 13:36:04]   Id=627, Name=Eduardo Motta (Filho de Everaldo Motta)
+[13/05/2025 13:36:04]   tag_id=NULL
+[13/05/2025 13:36:04]   ai_active=1
+[13/05/2025 13:36:04]   Id=632, Name=Edgar Cesar Pires - J.R.S. Industria de Madeiras
+[13/05/2025 13:36:04]   tag_id=NULL
+[13/05/2025 13:36:04]   ai_active=1
+[13/05/2025 13:36:04]   Id=636, Name=.
+[13/05/2025 13:36:04]   tag_id=NULL
+[13/05/2025 13:36:04]   ai_active=1
+[13/05/2025 13:36:04]   Id=637, Name=🌱
+[13/05/2025 13:36:04]   tag_id=NULL
+[13/05/2025 13:36:04]   ai_active=1
+[13/05/2025 13:36:04]   Id=638, Name=.
+[13/05/2025 13:36:04]   tag_id=NULL
+[13/05/2025 13:36:04]   ai_active=1
+[13/05/2025 13:36:04]   Id=639, Name=Emerson Luiz Tomazi
+[13/05/2025 13:36:04]   tag_id=NULL
+[13/05/2025 13:36:04]   ai_active=1
+[13/05/2025 13:36:04]   Id=736, Name=gesseoliveiradejesusgesse
+[13/05/2025 13:36:04]   tag_id=NULL
+[13/05/2025 13:36:04]   ai_active=0
+[13/05/2025 13:36:04] Now trying the normal EF query with our fix...
+[13/05/2025 13:36:04] Generated SQL: SET @__sectorId_0 = 25;
+
+SELECT `c`.`id`, `c`.`ai_active`, `c`.`assigned_to`, `c`.`avatar_url`, `c`.`contact_status`, `c`.`created_at`, `c`.`email`, `c`.`is_active`, `c`.`is_official`, `c`.`is_viewed`, `c`.`name`, `c`.`notes`, `c`.`number`, `c`.`order`, `c`.`priority`, `c`.`sector_id`, `c`.`tag_id`, `c`.`updated_at`
+FROM `contacts` AS `c`
+WHERE `c`.`sector_id` = @__sectorId_0
+[13/05/2025 13:36:04] Executing query with manual Select and mapping...
+[13/05/2025 13:36:04] Error when executing the query:
+[13/05/2025 13:36:04] Exception type: System.InvalidCastException
+[13/05/2025 13:36:04] Message: Can't convert NULL to Int32
+[13/05/2025 13:36:04] StackTrace:    at MySqlConnector.Core.Row.GetInt32(Int32 ordinal) in /_/src/MySqlConnector/Core/Row.cs:line 240
+   at MySqlConnector.MySqlDataReader.GetInt32(Int32 ordinal) in /_/src/MySqlConnector/MySqlDataReader.cs:line 240
+   at lambda_method32(Closure, QueryContext, DbDataReader, ResultContext, SingleQueryResultCoordinator)
+   at Microsoft.EntityFrameworkCore.Query.Internal.SingleQueryingEnumerable`1.Enumerator.MoveNext()
+   at System.Collections.Generic.List`1..ctor(IEnumerable`1 collection)
+   at System.Linq.Enumerable.ToList[TSource](IEnumerable`1 source)
+   at LigChat.Backend.Application.Repositories.ContactRepository.GetBySectorId(Int32 sectorId) in C:\Users\gusta\Videos\Projetos\LigChat\lig\ligchat-backend\src\Application\Repositories\ContactRepository.cs:line 228
+[13/05/2025 13:36:04] General error in GetBySectorId: Can't convert NULL to Int32
+[13/05/2025 13:36:04] StackTrace:    at MySqlConnector.Core.Row.GetInt32(Int32 ordinal) in /_/src/MySqlConnector/Core/Row.cs:line 240
+   at MySqlConnector.MySqlDataReader.GetInt32(Int32 ordinal) in /_/src/MySqlConnector/MySqlDataReader.cs:line 240
+   at lambda_method32(Closure, QueryContext, DbDataReader, ResultContext, SingleQueryResultCoordinator)
+   at Microsoft.EntityFrameworkCore.Query.Internal.SingleQueryingEnumerable`1.Enumerator.MoveNext()
+   at System.Collections.Generic.List`1..ctor(IEnumerable`1 collection)
+   at System.Linq.Enumerable.ToList[TSource](IEnumerable`1 source)
+   at LigChat.Backend.Application.Repositories.ContactRepository.GetBySectorId(Int32 sectorId) in C:\Users\gusta\Videos\Projetos\LigChat\lig\ligchat-backend\src\Application\Repositories\ContactRepository.cs:line 228
+[13/05/2025 13:38:24] ----------------------------------------------------------------
+[13/05/2025 13:38:24] Contact Repository Log Started
+[13/05/2025 13:38:24] ----------------------------------------------------------------
+[13/05/2025 13:38:24] Iniciando GetBySectorId com sectorId: 25
+[13/05/2025 13:38:24] Attempting to get raw data from database first...
+[13/05/2025 13:38:26] Error retrieving raw data: Can't convert NULL to Int32
+[13/05/2025 13:38:26] StackTrace:    at MySqlConnector.Core.Row.GetInt32(Int32 ordinal) in /_/src/MySqlConnector/Core/Row.cs:line 240
+   at MySqlConnector.MySqlDataReader.GetInt32(Int32 ordinal) in /_/src/MySqlConnector/MySqlDataReader.cs:line 240
+   at lambda_method28(Closure, QueryContext, DbDataReader, ResultContext, SingleQueryResultCoordinator)
+   at Microsoft.EntityFrameworkCore.Query.Internal.SingleQueryingEnumerable`1.Enumerator.MoveNext()
+   at System.Collections.Generic.List`1..ctor(IEnumerable`1 collection)
+   at System.Linq.Enumerable.ToList[TSource](IEnumerable`1 source)
+   at LigChat.Backend.Application.Repositories.ContactRepository.GetBySectorId(Int32 sectorId) in C:\Users\gusta\Videos\Projetos\LigChat\lig\ligchat-backend\src\Application\Repositories\ContactRepository.cs:line 164
+[13/05/2025 13:38:26] Executing raw SQL query for diagnostic purposes...
+[13/05/2025 13:38:26] Executing detailed SQL inspection query...
+[13/05/2025 13:38:26] Database schema information for contacts table:
+[13/05/2025 13:38:26] Error getting schema info: ordinal ('21') must be less than '21'. (Parameter 'ordinal')
+Actual value was 21.
+[13/05/2025 13:38:26] Raw SQL query results with full column details:
+[13/05/2025 13:38:26] Contact ID=413, Name=Wainer Fortes
+[13/05/2025 13:38:26]   All field values (showing NULL status):
+[13/05/2025 13:38:26]   number = 556684413148
+[13/05/2025 13:38:26]   avatar_url = NULL
+[13/05/2025 13:38:26]   email = 
+[13/05/2025 13:38:26]   notes = NULL
+[13/05/2025 13:38:26]   is_active = True
+[13/05/2025 13:38:26]   sector_id = 25
+[13/05/2025 13:38:26]   tag_id = NULL
+[13/05/2025 13:38:26]   ai_active = 1
+[13/05/2025 13:38:26]   assigned_to = NULL
+[13/05/2025 13:38:26]   is_official = True
+[13/05/2025 13:38:26]   is_viewed = True
+[13/05/2025 13:38:26]   order = 16
+[13/05/2025 13:38:26]   priority = normal
+[13/05/2025 13:38:26]   contact_status = Novo
+[13/05/2025 13:38:26] Contact ID=422, Name=Recepção Wainer Fortes Advocacia
+[13/05/2025 13:38:26]   All field values (showing NULL status):
+[13/05/2025 13:38:26]   number = 556692229080
+[13/05/2025 13:38:26]   avatar_url = https://ligchat-whatsapp.s3.amazonaws.com/sector_25/avatars/556692229080.jpg
+[13/05/2025 13:38:26]   email = NULL
+[13/05/2025 13:38:26]   notes = NULL
+[13/05/2025 13:38:26]   is_active = True
+[13/05/2025 13:38:26]   sector_id = 25
+[13/05/2025 13:38:26]   tag_id = NULL
+[13/05/2025 13:38:26]   ai_active = 0
+[13/05/2025 13:38:26]   assigned_to = NULL
+[13/05/2025 13:38:26]   is_official = False
+[13/05/2025 13:38:26]   is_viewed = True
+[13/05/2025 13:38:26]   order = 8
+[13/05/2025 13:38:26]   priority = low
+[13/05/2025 13:38:26]   contact_status = Novo
+[13/05/2025 13:38:26] Contact ID=427, Name=Amanda Azevedo
+[13/05/2025 13:38:26]   All field values (showing NULL status):
+[13/05/2025 13:38:26]   number = 556684466227
+[13/05/2025 13:38:26]   avatar_url = https://ligchat-whatsapp.s3.amazonaws.com/sector_25/avatars/556684466227.jpg
+[13/05/2025 13:38:26]   email = NULL
+[13/05/2025 13:38:26]   notes = NULL
+[13/05/2025 13:38:26]   is_active = True
+[13/05/2025 13:38:26]   sector_id = 25
+[13/05/2025 13:38:26]   tag_id = NULL
+[13/05/2025 13:38:26]   ai_active = 1
+[13/05/2025 13:38:26]   assigned_to = NULL
+[13/05/2025 13:38:26]   is_official = True
+[13/05/2025 13:38:26]   is_viewed = True
+[13/05/2025 13:38:26]   order = 14
+[13/05/2025 13:38:26]   priority = normal
+[13/05/2025 13:38:26]   contact_status = Novo
+[13/05/2025 13:38:26] Contact ID=429, Name=Paulinho Skol
+[13/05/2025 13:38:26]   All field values (showing NULL status):
+[13/05/2025 13:38:26]   number = 556681166233
+[13/05/2025 13:38:26]   avatar_url = https://ligchat-whatsapp.s3.amazonaws.com/sector_25/avatars/556681166233.jpg
+[13/05/2025 13:38:26]   email = NULL
+[13/05/2025 13:38:26]   notes = NULL
+[13/05/2025 13:38:26]   is_active = True
+[13/05/2025 13:38:26]   sector_id = 25
+[13/05/2025 13:38:26]   tag_id = NULL
+[13/05/2025 13:38:26]   ai_active = 1
+[13/05/2025 13:38:26]   assigned_to = NULL
+[13/05/2025 13:38:26]   is_official = True
+[13/05/2025 13:38:26]   is_viewed = True
+[13/05/2025 13:38:26]   order = 15
+[13/05/2025 13:38:26]   priority = normal
+[13/05/2025 13:38:26]   contact_status = Novo
+[13/05/2025 13:38:26] Contact ID=500, Name=Maria Abadia 
+[13/05/2025 13:38:26]   All field values (showing NULL status):
+[13/05/2025 13:38:26]   number = 556681179222
+[13/05/2025 13:38:26]   avatar_url = NULL
+[13/05/2025 13:38:26]   email = 
+[13/05/2025 13:38:26]   notes = NULL
+[13/05/2025 13:38:26]   is_active = True
+[13/05/2025 13:38:26]   sector_id = 25
+[13/05/2025 13:38:26]   tag_id = NULL
+[13/05/2025 13:38:26]   ai_active = 1
+[13/05/2025 13:38:26]   assigned_to = NULL
+[13/05/2025 13:38:26]   is_official = True
+[13/05/2025 13:38:26]   is_viewed = True
+[13/05/2025 13:38:26]   order = 11
+[13/05/2025 13:38:26]   priority = normal
+[13/05/2025 13:38:26]   contact_status = Novo
+[13/05/2025 13:38:26] Contact ID=501, Name=André Galáxia 
+[13/05/2025 13:38:26]   All field values (showing NULL status):
+[13/05/2025 13:38:26]   number = 556681519350
+[13/05/2025 13:38:26]   avatar_url = NULL
+[13/05/2025 13:38:26]   email = 
+[13/05/2025 13:38:26]   notes = NULL
+[13/05/2025 13:38:26]   is_active = True
+[13/05/2025 13:38:26]   sector_id = 25
+[13/05/2025 13:38:26]   tag_id = NULL
+[13/05/2025 13:38:26]   ai_active = 1
+[13/05/2025 13:38:26]   assigned_to = NULL
+[13/05/2025 13:38:26]   is_official = True
+[13/05/2025 13:38:26]   is_viewed = True
+[13/05/2025 13:38:26]   order = 10
+[13/05/2025 13:38:26]   priority = normal
+[13/05/2025 13:38:26]   contact_status = Novo
+[13/05/2025 13:38:26] Contact ID=502, Name=Ivanilda
+[13/05/2025 13:38:26]   All field values (showing NULL status):
+[13/05/2025 13:38:26]   number = 556692010217
+[13/05/2025 13:38:26]   avatar_url = https://ligchat-whatsapp.s3.amazonaws.com/sector_25/avatars/556692010217.jpg
+[13/05/2025 13:38:26]   email = NULL
+[13/05/2025 13:38:26]   notes = NULL
+[13/05/2025 13:38:26]   is_active = True
+[13/05/2025 13:38:26]   sector_id = 25
+[13/05/2025 13:38:26]   tag_id = NULL
+[13/05/2025 13:38:26]   ai_active = 1
+[13/05/2025 13:38:26]   assigned_to = NULL
+[13/05/2025 13:38:26]   is_official = True
+[13/05/2025 13:38:26]   is_viewed = True
+[13/05/2025 13:38:26]   order = 13
+[13/05/2025 13:38:26]   priority = normal
+[13/05/2025 13:38:26]   contact_status = Novo
+[13/05/2025 13:38:26] Contact ID=503, Name=Jorlan
+[13/05/2025 13:38:26]   All field values (showing NULL status):
+[13/05/2025 13:38:26]   number = 556681262912
+[13/05/2025 13:38:26]   avatar_url = https://ligchat-whatsapp.s3.amazonaws.com/sector_25/avatars/556681262912.jpg
+[13/05/2025 13:38:26]   email = 
+[13/05/2025 13:38:26]   notes = NULL
+[13/05/2025 13:38:26]   is_active = True
+[13/05/2025 13:38:26]   sector_id = 25
+[13/05/2025 13:38:26]   tag_id = NULL
+[13/05/2025 13:38:26]   ai_active = 1
+[13/05/2025 13:38:26]   assigned_to = 15
+[13/05/2025 13:38:26]   is_official = True
+[13/05/2025 13:38:26]   is_viewed = True
+[13/05/2025 13:38:26]   order = 12
+[13/05/2025 13:38:26]   priority = normal
+[13/05/2025 13:38:26]   contact_status = Novo
+[13/05/2025 13:38:26] Contact ID=504, Name=🙏🏻
+[13/05/2025 13:38:26]   All field values (showing NULL status):
+[13/05/2025 13:38:26]   number = 556581312881
+[13/05/2025 13:38:26]   avatar_url = https://ligchat-whatsapp.s3.amazonaws.com/sector_25/avatars/556581312881.jpg
+[13/05/2025 13:38:26]   email = NULL
+[13/05/2025 13:38:26]   notes = NULL
+[13/05/2025 13:38:26]   is_active = True
+[13/05/2025 13:38:26]   sector_id = 25
+[13/05/2025 13:38:26]   tag_id = NULL
+[13/05/2025 13:38:26]   ai_active = 1
+[13/05/2025 13:38:26]   assigned_to = NULL
+[13/05/2025 13:38:26]   is_official = True
+[13/05/2025 13:38:26]   is_viewed = True
+[13/05/2025 13:38:26]   order = 9
+[13/05/2025 13:38:26]   priority = normal
+[13/05/2025 13:38:26]   contact_status = Novo
+[13/05/2025 13:38:26] Contact ID=609, Name=Milton Pupio
+[13/05/2025 13:38:26]   All field values (showing NULL status):
+[13/05/2025 13:38:26]   number = 556684212999
+[13/05/2025 13:38:26]   avatar_url = NULL
+[13/05/2025 13:38:26]   email = 
+[13/05/2025 13:38:26]   notes = NULL
+[13/05/2025 13:38:26]   is_active = True
+[13/05/2025 13:38:26]   sector_id = 25
+[13/05/2025 13:38:26]   tag_id = NULL
+[13/05/2025 13:38:26]   ai_active = 1
+[13/05/2025 13:38:26]   assigned_to = NULL
+[13/05/2025 13:38:26]   is_official = True
+[13/05/2025 13:38:26]   is_viewed = True
+[13/05/2025 13:38:26]   order = 7
+[13/05/2025 13:38:26]   priority = normal
+[13/05/2025 13:38:26]   contact_status = Novo
+[13/05/2025 13:38:26] Contact ID=627, Name=Eduardo Motta (Filho de Everaldo Motta)
+[13/05/2025 13:38:26]   All field values (showing NULL status):
+[13/05/2025 13:38:26]   number = 5566981069577
+[13/05/2025 13:38:26]   avatar_url = NULL
+[13/05/2025 13:38:26]   email = 
+[13/05/2025 13:38:26]   notes = NULL
+[13/05/2025 13:38:26]   is_active = True
+[13/05/2025 13:38:26]   sector_id = 25
+[13/05/2025 13:38:26]   tag_id = NULL
+[13/05/2025 13:38:26]   ai_active = 1
+[13/05/2025 13:38:26]   assigned_to = NULL
+[13/05/2025 13:38:26]   is_official = True
+[13/05/2025 13:38:26]   is_viewed = True
+[13/05/2025 13:38:26]   order = 6
+[13/05/2025 13:38:26]   priority = normal
+[13/05/2025 13:38:26]   contact_status = Novo
+[13/05/2025 13:38:26] Contact ID=632, Name=Edgar Cesar Pires - J.R.S. Industria de Madeiras
+[13/05/2025 13:38:26]   All field values (showing NULL status):
+[13/05/2025 13:38:26]   number = 556681212808
+[13/05/2025 13:38:26]   avatar_url = NULL
+[13/05/2025 13:38:26]   email = 
+[13/05/2025 13:38:26]   notes = NULL
+[13/05/2025 13:38:26]   is_active = True
+[13/05/2025 13:38:26]   sector_id = 25
+[13/05/2025 13:38:26]   tag_id = NULL
+[13/05/2025 13:38:26]   ai_active = 1
+[13/05/2025 13:38:26]   assigned_to = NULL
+[13/05/2025 13:38:26]   is_official = True
+[13/05/2025 13:38:26]   is_viewed = False
+[13/05/2025 13:38:26]   order = NULL
+[13/05/2025 13:38:26]   priority = normal
+[13/05/2025 13:38:26]   contact_status = Novo
+[13/05/2025 13:38:26] Contact ID=636, Name=.
+[13/05/2025 13:38:26]   All field values (showing NULL status):
+[13/05/2025 13:38:26]   number = 556681317569
+[13/05/2025 13:38:26]   avatar_url = NULL
+[13/05/2025 13:38:26]   email = NULL
+[13/05/2025 13:38:26]   notes = NULL
+[13/05/2025 13:38:26]   is_active = True
+[13/05/2025 13:38:26]   sector_id = 25
+[13/05/2025 13:38:26]   tag_id = NULL
+[13/05/2025 13:38:26]   ai_active = 1
+[13/05/2025 13:38:26]   assigned_to = NULL
+[13/05/2025 13:38:26]   is_official = True
+[13/05/2025 13:38:26]   is_viewed = True
+[13/05/2025 13:38:26]   order = 5
+[13/05/2025 13:38:26]   priority = normal
+[13/05/2025 13:38:26]   contact_status = Novo
+[13/05/2025 13:38:26] Contact ID=637, Name=🌱
+[13/05/2025 13:38:26]   All field values (showing NULL status):
+[13/05/2025 13:38:26]   number = 556699843270
+[13/05/2025 13:38:26]   avatar_url = https://ligchat-whatsapp.s3.amazonaws.com/sector_25/avatars/556699843270.jpg
+[13/05/2025 13:38:26]   email = NULL
+[13/05/2025 13:38:26]   notes = NULL
+[13/05/2025 13:38:26]   is_active = True
+[13/05/2025 13:38:26]   sector_id = 25
+[13/05/2025 13:38:26]   tag_id = NULL
+[13/05/2025 13:38:26]   ai_active = 1
+[13/05/2025 13:38:26]   assigned_to = NULL
+[13/05/2025 13:38:26]   is_official = True
+[13/05/2025 13:38:26]   is_viewed = False
+[13/05/2025 13:38:26]   order = 3
+[13/05/2025 13:38:26]   priority = normal
+[13/05/2025 13:38:26]   contact_status = Novo
+[13/05/2025 13:38:26] Contact ID=638, Name=.
+[13/05/2025 13:38:26]   All field values (showing NULL status):
+[13/05/2025 13:38:26]   number = 556681261273
+[13/05/2025 13:38:26]   avatar_url = https://ligchat-whatsapp.s3.amazonaws.com/sector_25/avatars/556681261273.jpg
+[13/05/2025 13:38:26]   email = NULL
+[13/05/2025 13:38:26]   notes = NULL
+[13/05/2025 13:38:26]   is_active = True
+[13/05/2025 13:38:26]   sector_id = 25
+[13/05/2025 13:38:26]   tag_id = NULL
+[13/05/2025 13:38:26]   ai_active = 1
+[13/05/2025 13:38:26]   assigned_to = NULL
+[13/05/2025 13:38:26]   is_official = True
+[13/05/2025 13:38:26]   is_viewed = False
+[13/05/2025 13:38:26]   order = 1
+[13/05/2025 13:38:26]   priority = normal
+[13/05/2025 13:38:26]   contact_status = Novo
+[13/05/2025 13:38:26] Contact ID=639, Name=Emerson Luiz Tomazi
+[13/05/2025 13:38:26]   All field values (showing NULL status):
+[13/05/2025 13:38:26]   number = 556681242520
+[13/05/2025 13:38:26]   avatar_url = NULL
+[13/05/2025 13:38:26]   email = NULL
+[13/05/2025 13:38:26]   notes = NULL
+[13/05/2025 13:38:26]   is_active = True
+[13/05/2025 13:38:26]   sector_id = 25
+[13/05/2025 13:38:26]   tag_id = NULL
+[13/05/2025 13:38:26]   ai_active = 1
+[13/05/2025 13:38:26]   assigned_to = NULL
+[13/05/2025 13:38:26]   is_official = True
+[13/05/2025 13:38:26]   is_viewed = False
+[13/05/2025 13:38:26]   order = 4
+[13/05/2025 13:38:26]   priority = normal
+[13/05/2025 13:38:26]   contact_status = Novo
+[13/05/2025 13:38:26] Contact ID=736, Name=gesseoliveiradejesusgesse
+[13/05/2025 13:38:26]   All field values (showing NULL status):
+[13/05/2025 13:38:26]   number = 556684050054
+[13/05/2025 13:38:26]   avatar_url = https://ligchat-whatsapp.s3.amazonaws.com/sector_25/avatars/556684050054.jpg
+[13/05/2025 13:38:26]   email = NULL
+[13/05/2025 13:38:26]   notes = NULL
+[13/05/2025 13:38:26]   is_active = True
+[13/05/2025 13:38:26]   sector_id = 25
+[13/05/2025 13:38:26]   tag_id = NULL
+[13/05/2025 13:38:26]   ai_active = 0
+[13/05/2025 13:38:26]   assigned_to = NULL
+[13/05/2025 13:38:26]   is_official = False
+[13/05/2025 13:38:26]   is_viewed = False
+[13/05/2025 13:38:26]   order = 2
+[13/05/2025 13:38:26]   priority = low
+[13/05/2025 13:38:26]   contact_status = Novo
+[13/05/2025 13:38:26] Now trying the normal EF query with our fix...
+[13/05/2025 13:38:26] Generated SQL: SET @__sectorId_0 = 25;
+
+SELECT `c`.`id`, `c`.`ai_active`, `c`.`assigned_to`, `c`.`avatar_url`, `c`.`contact_status`, `c`.`created_at`, `c`.`email`, `c`.`is_active`, `c`.`is_official`, `c`.`is_viewed`, `c`.`name`, `c`.`notes`, `c`.`number`, `c`.`order`, `c`.`priority`, `c`.`sector_id`, `c`.`tag_id`, `c`.`updated_at`
+FROM `contacts` AS `c`
+WHERE `c`.`sector_id` = @__sectorId_0
+[13/05/2025 13:38:26] Attempting alternative approach with manual SQL and mapping...
+[13/05/2025 13:38:27] Successfully created contact from SQL: Id=413, Name=Wainer Fortes
+[13/05/2025 13:38:27] Successfully created contact from SQL: Id=422, Name=Recepção Wainer Fortes Advocacia
+[13/05/2025 13:38:27] Successfully created contact from SQL: Id=427, Name=Amanda Azevedo
+[13/05/2025 13:38:27] Successfully created contact from SQL: Id=429, Name=Paulinho Skol
+[13/05/2025 13:38:27] Successfully created contact from SQL: Id=500, Name=Maria Abadia 
+[13/05/2025 13:38:27] Successfully created contact from SQL: Id=501, Name=André Galáxia 
+[13/05/2025 13:38:27] Successfully created contact from SQL: Id=502, Name=Ivanilda
+[13/05/2025 13:38:27] Successfully created contact from SQL: Id=503, Name=Jorlan
+[13/05/2025 13:38:27] Successfully created contact from SQL: Id=504, Name=🙏🏻
+[13/05/2025 13:38:27] Successfully created contact from SQL: Id=609, Name=Milton Pupio
+[13/05/2025 13:38:27] Successfully created contact from SQL: Id=627, Name=Eduardo Motta (Filho de Everaldo Motta)
+[13/05/2025 13:38:27] Successfully created contact from SQL: Id=632, Name=Edgar Cesar Pires - J.R.S. Industria de Madeiras
+[13/05/2025 13:38:27] Successfully created contact from SQL: Id=636, Name=.
+[13/05/2025 13:38:27] Successfully created contact from SQL: Id=637, Name=🌱
+[13/05/2025 13:38:27] Successfully created contact from SQL: Id=638, Name=.
+[13/05/2025 13:38:27] Successfully created contact from SQL: Id=639, Name=Emerson Luiz Tomazi
+[13/05/2025 13:38:27] Successfully created contact from SQL: Id=736, Name=gesseoliveiradejesusgesse
+[13/05/2025 13:38:27] Successfully retrieved 17 contacts using SQL approach
+[13/05/2025 13:41:16] ----------------------------------------------------------------
+[13/05/2025 13:41:16] Contact Repository Log Started
+[13/05/2025 13:41:16] ----------------------------------------------------------------
+[13/05/2025 13:41:16] Iniciando GetBySectorId com sectorId: 25
+[13/05/2025 13:41:16] Attempting to get raw data from database first...
+[13/05/2025 13:41:16] Checking for contacts with NULL order values...
+[13/05/2025 13:41:17] Found 1 contacts with NULL order values. Fixing them...
+[13/05/2025 13:41:18] Current max order value: 16
+[13/05/2025 13:41:18] Updated contact ID 632 with order value 17. Rows affected: 1
+[13/05/2025 13:41:18] Generated SQL: SET @__sectorId_0 = 25;
+
+SELECT `c`.`id`, `c`.`ai_active`, `c`.`assigned_to`, `c`.`avatar_url`, `c`.`contact_status`, `c`.`created_at`, `c`.`email`, `c`.`is_active`, `c`.`is_official`, `c`.`is_viewed`, `c`.`name`, `c`.`notes`, `c`.`number`, `c`.`order`, `c`.`priority`, `c`.`sector_id`, `c`.`tag_id`, `c`.`updated_at`
+FROM `contacts` AS `c`
+WHERE `c`.`sector_id` = @__sectorId_0
+[13/05/2025 13:41:18] Executing query with manual Select and mapping...
+[13/05/2025 13:41:18] Successfully fetched 17 entities from database
+[13/05/2025 13:41:18] Mapping contact: Id=413, Name=Wainer Fortes
+[13/05/2025 13:41:18]   TagId=NULL
+[13/05/2025 13:41:18]   AiActive=1
+[13/05/2025 13:41:18]   Order=16
+[13/05/2025 13:41:18] Processing Contact: Id=413, Name=Wainer Fortes
+[13/05/2025 13:41:18]   SectorId=25, TagId=NULL
+[13/05/2025 13:41:18]   AiActive raw value: 1
+[13/05/2025 13:41:18] Successfully mapped contact Id=413
+[13/05/2025 13:41:18] Mapping contact: Id=422, Name=Recepção Wainer Fortes Advocacia
+[13/05/2025 13:41:18]   TagId=NULL
+[13/05/2025 13:41:18]   AiActive=0
+[13/05/2025 13:41:18]   Order=8
+[13/05/2025 13:41:18] Processing Contact: Id=422, Name=Recepção Wainer Fortes Advocacia
+[13/05/2025 13:41:18]   SectorId=25, TagId=NULL
+[13/05/2025 13:41:18]   AiActive raw value: 0
+[13/05/2025 13:41:18] Successfully mapped contact Id=422
+[13/05/2025 13:41:18] Mapping contact: Id=427, Name=Amanda Azevedo
+[13/05/2025 13:41:18]   TagId=NULL
+[13/05/2025 13:41:18]   AiActive=1
+[13/05/2025 13:41:18]   Order=14
+[13/05/2025 13:41:18] Processing Contact: Id=427, Name=Amanda Azevedo
+[13/05/2025 13:41:18]   SectorId=25, TagId=NULL
+[13/05/2025 13:41:18]   AiActive raw value: 1
+[13/05/2025 13:41:18] Successfully mapped contact Id=427
+[13/05/2025 13:41:18] Mapping contact: Id=429, Name=Paulinho Skol
+[13/05/2025 13:41:18]   TagId=NULL
+[13/05/2025 13:41:18]   AiActive=1
+[13/05/2025 13:41:18]   Order=15
+[13/05/2025 13:41:18] Processing Contact: Id=429, Name=Paulinho Skol
+[13/05/2025 13:41:18]   SectorId=25, TagId=NULL
+[13/05/2025 13:41:18]   AiActive raw value: 1
+[13/05/2025 13:41:18] Successfully mapped contact Id=429
+[13/05/2025 13:41:18] Mapping contact: Id=500, Name=Maria Abadia 
+[13/05/2025 13:41:18]   TagId=NULL
+[13/05/2025 13:41:18]   AiActive=1
+[13/05/2025 13:41:18]   Order=11
+[13/05/2025 13:41:18] Processing Contact: Id=500, Name=Maria Abadia 
+[13/05/2025 13:41:18]   SectorId=25, TagId=NULL
+[13/05/2025 13:41:18]   AiActive raw value: 1
+[13/05/2025 13:41:18] Successfully mapped contact Id=500
+[13/05/2025 13:41:18] Mapping contact: Id=501, Name=André Galáxia 
+[13/05/2025 13:41:18]   TagId=NULL
+[13/05/2025 13:41:18]   AiActive=1
+[13/05/2025 13:41:18]   Order=10
+[13/05/2025 13:41:18] Processing Contact: Id=501, Name=André Galáxia 
+[13/05/2025 13:41:18]   SectorId=25, TagId=NULL
+[13/05/2025 13:41:18]   AiActive raw value: 1
+[13/05/2025 13:41:18] Successfully mapped contact Id=501
+[13/05/2025 13:41:18] Mapping contact: Id=502, Name=Ivanilda
+[13/05/2025 13:41:18]   TagId=NULL
+[13/05/2025 13:41:18]   AiActive=1
+[13/05/2025 13:41:18]   Order=13
+[13/05/2025 13:41:18] Processing Contact: Id=502, Name=Ivanilda
+[13/05/2025 13:41:18]   SectorId=25, TagId=NULL
+[13/05/2025 13:41:18]   AiActive raw value: 1
+[13/05/2025 13:41:18] Successfully mapped contact Id=502
+[13/05/2025 13:41:18] Mapping contact: Id=503, Name=Jorlan
+[13/05/2025 13:41:18]   TagId=NULL
+[13/05/2025 13:41:18]   AiActive=1
+[13/05/2025 13:41:18]   Order=12
+[13/05/2025 13:41:18] Processing Contact: Id=503, Name=Jorlan
+[13/05/2025 13:41:18]   SectorId=25, TagId=NULL
+[13/05/2025 13:41:18]   AiActive raw value: 1
+[13/05/2025 13:41:18] Successfully mapped contact Id=503
+[13/05/2025 13:41:18] Mapping contact: Id=504, Name=🙏🏻
+[13/05/2025 13:41:18]   TagId=NULL
+[13/05/2025 13:41:18]   AiActive=1
+[13/05/2025 13:41:18]   Order=9
+[13/05/2025 13:41:18] Processing Contact: Id=504, Name=🙏🏻
+[13/05/2025 13:41:18]   SectorId=25, TagId=NULL
+[13/05/2025 13:41:18]   AiActive raw value: 1
+[13/05/2025 13:41:18] Successfully mapped contact Id=504
+[13/05/2025 13:41:18] Mapping contact: Id=609, Name=Milton Pupio
+[13/05/2025 13:41:18]   TagId=NULL
+[13/05/2025 13:41:18]   AiActive=1
+[13/05/2025 13:41:18]   Order=7
+[13/05/2025 13:41:18] Processing Contact: Id=609, Name=Milton Pupio
+[13/05/2025 13:41:18]   SectorId=25, TagId=NULL
+[13/05/2025 13:41:18]   AiActive raw value: 1
+[13/05/2025 13:41:18] Successfully mapped contact Id=609
+[13/05/2025 13:41:18] Mapping contact: Id=627, Name=Eduardo Motta (Filho de Everaldo Motta)
+[13/05/2025 13:41:18]   TagId=NULL
+[13/05/2025 13:41:18]   AiActive=1
+[13/05/2025 13:41:18]   Order=6
+[13/05/2025 13:41:18] Processing Contact: Id=627, Name=Eduardo Motta (Filho de Everaldo Motta)
+[13/05/2025 13:41:18]   SectorId=25, TagId=NULL
+[13/05/2025 13:41:18]   AiActive raw value: 1
+[13/05/2025 13:41:18] Successfully mapped contact Id=627
+[13/05/2025 13:41:18] Mapping contact: Id=632, Name=Edgar Cesar Pires - J.R.S. Industria de Madeiras
+[13/05/2025 13:41:18]   TagId=NULL
+[13/05/2025 13:41:18]   AiActive=1
+[13/05/2025 13:41:18]   Order=17
+[13/05/2025 13:41:18] Processing Contact: Id=632, Name=Edgar Cesar Pires - J.R.S. Industria de Madeiras
+[13/05/2025 13:41:18]   SectorId=25, TagId=NULL
+[13/05/2025 13:41:18]   AiActive raw value: 1
+[13/05/2025 13:41:18] Successfully mapped contact Id=632
+[13/05/2025 13:41:18] Mapping contact: Id=636, Name=.
+[13/05/2025 13:41:18]   TagId=NULL
+[13/05/2025 13:41:18]   AiActive=1
+[13/05/2025 13:41:18]   Order=5
+[13/05/2025 13:41:18] Processing Contact: Id=636, Name=.
+[13/05/2025 13:41:18]   SectorId=25, TagId=NULL
+[13/05/2025 13:41:18]   AiActive raw value: 1
+[13/05/2025 13:41:18] Successfully mapped contact Id=636
+[13/05/2025 13:41:18] Mapping contact: Id=637, Name=🌱
+[13/05/2025 13:41:18]   TagId=NULL
+[13/05/2025 13:41:18]   AiActive=1
+[13/05/2025 13:41:18]   Order=3
+[13/05/2025 13:41:18] Processing Contact: Id=637, Name=🌱
+[13/05/2025 13:41:18]   SectorId=25, TagId=NULL
+[13/05/2025 13:41:18]   AiActive raw value: 1
+[13/05/2025 13:41:18] Successfully mapped contact Id=637
+[13/05/2025 13:41:18] Mapping contact: Id=638, Name=.
+[13/05/2025 13:41:18]   TagId=NULL
+[13/05/2025 13:41:18]   AiActive=1
+[13/05/2025 13:41:18]   Order=1
+[13/05/2025 13:41:18] Processing Contact: Id=638, Name=.
+[13/05/2025 13:41:18]   SectorId=25, TagId=NULL
+[13/05/2025 13:41:18]   AiActive raw value: 1
+[13/05/2025 13:41:18] Successfully mapped contact Id=638
+[13/05/2025 13:41:18] Mapping contact: Id=639, Name=Emerson Luiz Tomazi
+[13/05/2025 13:41:18]   TagId=NULL
+[13/05/2025 13:41:18]   AiActive=1
+[13/05/2025 13:41:18]   Order=4
+[13/05/2025 13:41:18] Processing Contact: Id=639, Name=Emerson Luiz Tomazi
+[13/05/2025 13:41:18]   SectorId=25, TagId=NULL
+[13/05/2025 13:41:18]   AiActive raw value: 1
+[13/05/2025 13:41:18] Successfully mapped contact Id=639
+[13/05/2025 13:41:18] Mapping contact: Id=736, Name=gesseoliveiradejesusgesse
+[13/05/2025 13:41:18]   TagId=NULL
+[13/05/2025 13:41:18]   AiActive=0
+[13/05/2025 13:41:18]   Order=2
+[13/05/2025 13:41:18] Processing Contact: Id=736, Name=gesseoliveiradejesusgesse
+[13/05/2025 13:41:18]   SectorId=25, TagId=NULL
+[13/05/2025 13:41:18]   AiActive raw value: 0
+[13/05/2025 13:41:18] Successfully mapped contact Id=736
+[13/05/2025 13:41:18] Query executed successfully. Number of mapped records: 17
