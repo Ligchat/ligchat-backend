@@ -210,26 +210,15 @@ namespace LigChat.Backend.Web.Controller
                 return Unauthorized(new { Message = "Invalid token or missing user ID." });
             }
 
-            var existingUserResponse = _userService.GetById(userId.Value);
-            if (existingUserResponse == null)
-            {
-                return NotFound(new SingleUserResponse
-                {
-                    Message = "User not found.",
-                    Code = "404",
-                    Data = null
-                });
-            }
-
             var updatedProfileResponse = _userService.UpdateProfile(userId.Value, profileDto);
-            if (updatedProfileResponse == null)
+            if (updatedProfileResponse.Code == "404")
             {
-                return BadRequest(new SingleUserResponse
-                {
-                    Message = "Profile could not be updated.",
-                    Code = "400",
-                    Data = null
-                });
+                return NotFound(updatedProfileResponse);
+            }
+            
+            if (updatedProfileResponse.Code == "400")
+            {
+                return BadRequest(updatedProfileResponse);
             }
 
             return Ok(updatedProfileResponse);

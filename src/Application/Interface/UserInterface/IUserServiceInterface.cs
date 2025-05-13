@@ -21,7 +21,7 @@ namespace LigChat.Backend.Application.Interface.UserInterface
         SingleUserResponse? Update(int id, UpdateUserRequestDTO userDto);
 
         // Atualiza apenas os dados de perfil básico de um usuário (nome, email, telefone, avatar)
-        SingleUserResponse? UpdateProfile(int id, UpdateProfileRequestDTO profileDto);
+        ProfileResponse UpdateProfile(int id, UpdateProfileRequestDTO profileDto);
 
         // Obtém apenas os dados de perfil básico de um usuário (nome, email, telefone, avatar)
         ProfileResponse GetProfile(int id);

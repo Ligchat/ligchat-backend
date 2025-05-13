@@ -327,17 +327,17 @@ namespace LigChat.Com.Api.Mvc.UserMvc.Service
         }
 
         // Método específico para atualização apenas do perfil básico
-        public SingleUserResponse UpdateProfile(int id, UpdateProfileRequestDTO profileDto)
+        public ProfileResponse UpdateProfile(int id, UpdateProfileRequestDTO profileDto)
         {
             if (string.IsNullOrWhiteSpace(profileDto.Name) || string.IsNullOrWhiteSpace(profileDto.Email))
             {
-                return new SingleUserResponse("Invalid request", "400", null);
+                return new ProfileResponse("Invalid request: Name and Email are required.", "400", null);
             }
 
             var existingUser = _userRepository.GetById(id);
             if (existingUser == null)
             {
-                return new SingleUserResponse("User not found", "404", null);
+                return new ProfileResponse("User not found", "404", null);
             }
 
             // Atualiza apenas os campos do perfil básico
@@ -357,32 +357,16 @@ namespace LigChat.Com.Api.Mvc.UserMvc.Service
 
             var savedUser = _userRepository.Update(existingUser);
 
-            // Busca os setores atualizados para retornar na resposta
-            var userSectors = _userSector.GetAllByUserId(savedUser.Id);
-            var sectorInfoList = new List<SectorInfo>();
-
-            foreach (var userSector in userSectors)
-            {
-                var sector = _sectorRepository.GetById(userSector.SectorId);
-                if (sector != null)
-                {
-                    sectorInfoList.Add(new SectorInfo(sector.Id, sector.Name));
-                }
-            }
-
-            var responseDto = new UserViewModel(
+            // Criar objeto ProfileResponseDTO apenas com os dados básicos
+            var profileResponseDto = new ProfileResponseDTO(
                 savedUser.Id,
                 savedUser.Name,
                 savedUser.Email,
                 savedUser.PhoneWhatsapp,
-                savedUser.AvatarUrl,
-                savedUser.IsAdmin,
-                savedUser.Status,
-                savedUser.InvitedBy
+                savedUser.AvatarUrl
             );
-            responseDto.Sectors = sectorInfoList;
 
-            return new SingleUserResponse("Profile updated successfully", "200", responseDto);
+            return new ProfileResponse("Profile updated successfully", "200", profileResponseDto);
         }
 
         private bool IsBase64String(string base64String)
