@@ -20,6 +20,9 @@ namespace LigChat.Backend.Application.Interface.UserInterface
         // Atualiza um usuário existente com base no ID e nos dados fornecidos no DTO UpdateUserRequestDTO.
         SingleUserResponse? Update(int id, UpdateUserRequestDTO userDto);
 
+        // Atualiza apenas os dados de perfil básico de um usuário (nome, email, telefone, avatar)
+        SingleUserResponse? UpdateProfile(int id, UpdateProfileRequestDTO profileDto);
+
         // Deleta um usuário com base no ID.
         SingleUserResponse? Delete(int id);
 

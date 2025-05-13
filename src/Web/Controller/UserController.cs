@@ -11,6 +11,7 @@ using System.Collections.Generic;
 using System.Linq;
 using tests_.src.Domain.Entities.LigChat.Backend.Domain.Entities;
 using LigChat.Backend.Application.Repositories;
+using Microsoft.AspNetCore.Authorization;
 
 namespace LigChat.Backend.Web.Controller
 {
@@ -173,6 +174,46 @@ namespace LigChat.Backend.Web.Controller
             return Ok(updatedUserResponse);
         }
 
+        [HttpPut("profile")]
+        [Authorize]
+        public IActionResult UpdateCurrentUserProfile([FromBody] UpdateProfileRequestDTO profileDto)
+        {
+            if (profileDto == null)
+            {
+                return BadRequest("Profile data is required.");
+            }
+
+            var userId = GetUserIdFromClaims();
+            if (!userId.HasValue)
+            {
+                return Unauthorized(new { Message = "Invalid token or missing user ID." });
+            }
+
+            var existingUserResponse = _userService.GetById(userId.Value);
+            if (existingUserResponse == null)
+            {
+                return NotFound(new SingleUserResponse
+                {
+                    Message = "User not found.",
+                    Code = "404",
+                    Data = null
+                });
+            }
+
+            var updatedProfileResponse = _userService.UpdateProfile(userId.Value, profileDto);
+            if (updatedProfileResponse == null)
+            {
+                return BadRequest(new SingleUserResponse
+                {
+                    Message = "Profile could not be updated.",
+                    Code = "400",
+                    Data = null
+                });
+            }
+
+            return Ok(updatedProfileResponse);
+        }
+
         [HttpDelete("{id}")]
         public IActionResult Delete(int id)
         {
@@ -189,6 +230,17 @@ namespace LigChat.Backend.Web.Controller
 
             _userService.Delete(id);
             return NoContent();
+        }
+
+        private int? GetUserIdFromClaims()
+        {
+            var userIdClaim = User?.Claims.FirstOrDefault(x => x.Type == "userId");
+            if (userIdClaim != null && int.TryParse(userIdClaim.Value, out var userId))
+            {
+                return userId;
+            }
+
+            return null;
         }
     }
 }
