@@ -240,18 +240,26 @@ namespace LigChat.Com.Api.Mvc.UserMvc.Service
                 return new SingleUserResponse("User not found", "404", null);
             }
 
+            // Atualiza apenas os campos fornecidos explicitamente
             existingUser.Name = userDto.Name;
             existingUser.Email = userDto.Email;
-            existingUser.PhoneWhatsapp = userDto.PhoneWhatsapp;
-            existingUser.IsAdmin = userDto.IsAdmin;
-            existingUser.Status = userDto.Status;
-
+            
+            // Só atualiza phoneWhatsapp se foi fornecido explicitamente
+            if (!string.IsNullOrWhiteSpace(userDto.PhoneWhatsapp))
+            {
+                existingUser.PhoneWhatsapp = userDto.PhoneWhatsapp;
+            }
+            
+            // Não modificamos isAdmin e Status se estiver atualizando perfil básico
+            // Isso preserva os valores existentes dessas flags para evitar perda acidental
+            // de permissões durante atualizações de perfil
+            
             // Verifica se uma imagem foi enviada
             if (!string.IsNullOrWhiteSpace(userDto.AvatarUrl) && IsBase64String(userDto.AvatarUrl))
             {
                 existingUser.AvatarUrl = SaveImageToS3(existingUser.Id, userDto.AvatarUrl);
             }
-            else
+            else if (!string.IsNullOrWhiteSpace(userDto.AvatarUrl))
             {
                 existingUser.AvatarUrl = userDto.AvatarUrl; // Mantém a URL existente se não houver nova imagem
             }
@@ -259,7 +267,7 @@ namespace LigChat.Com.Api.Mvc.UserMvc.Service
             var savedUser = _userRepository.Update(existingUser);
 
             // Atualiza os setores do usuário de forma incremental e segura
-            if (userDto.Sectors != null)
+            if (userDto.Sectors != null && userDto.Sectors.Any())
             {
                 var currentAssociations = _userSector.GetAllByUserId(savedUser.Id).ToList();
                 var currentSectorIds = currentAssociations.Select(us => us.SectorId).ToList();
