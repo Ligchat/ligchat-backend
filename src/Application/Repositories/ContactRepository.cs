@@ -194,37 +194,55 @@ namespace LigChat.Backend.Application.Repositories
                     {
                         LogToFile($"Found {contactsWithNullOrder.Count} contacts with NULL order values. Fixing them...");
                         
-                        // Encontrar o maior valor de Order para este setor
-                        int maxOrder = 0;
+                        // Primeiro, verificamos se há contatos com order já definido
+                        bool hasExistingOrders = false;
+                        int minOrder = 0;
                         using (var command = connection.CreateCommand())
                         {
-                            command.CommandText = "SELECT IFNULL(MAX(`order`), 0) FROM contacts WHERE sector_id = @sectorId AND `order` IS NOT NULL";
+                            command.CommandText = "SELECT COUNT(*) FROM contacts WHERE sector_id = @sectorId AND `order` IS NOT NULL";
                             var param = command.CreateParameter();
                             param.ParameterName = "@sectorId";
                             param.Value = sectorId;
                             command.Parameters.Add(param);
                             
-                            var result = command.ExecuteScalar();
-                            if (result != null && result != DBNull.Value)
+                            var countResult = command.ExecuteScalar();
+                            hasExistingOrders = Convert.ToInt32(countResult) > 0;
+                            
+                            if (hasExistingOrders)
                             {
-                                maxOrder = Convert.ToInt32(result);
+                                // Se há contatos com order já definido, primeiro abrimos espaço para os novos
+                                command.CommandText = "SELECT MIN(`order`) FROM contacts WHERE sector_id = @sectorId AND `order` IS NOT NULL";
+                                var minResult = command.ExecuteScalar();
+                                if (minResult != null && minResult != DBNull.Value)
+                                {
+                                    minOrder = Convert.ToInt32(minResult);
+                                }
+                                
+                                LogToFile($"Current minimum order value: {minOrder}");
+                                
+                                // Desloque todos os contatos existentes para abrir espaço
+                                command.CommandText = "UPDATE contacts SET `order` = `order` + @shift WHERE sector_id = @sectorId AND `order` IS NOT NULL";
+                                var shiftParam = command.CreateParameter();
+                                shiftParam.ParameterName = "@shift";
+                                shiftParam.Value = contactsWithNullOrder.Count;
+                                command.Parameters.Add(shiftParam);
+                                
+                                int rowsShifted = command.ExecuteNonQuery();
+                                LogToFile($"Shifted {rowsShifted} existing contacts to make room for NULL order contacts");
                             }
                         }
                         
-                        LogToFile($"Current max order value: {maxOrder}");
-                        
-                        // Atualizar cada contato com Order NULL
+                        // Agora, atribua os valores de Order para os contatos NULL
+                        int orderValue = minOrder;
                         foreach (var contactId in contactsWithNullOrder)
                         {
-                            maxOrder++;
-                            
                             using (var command = connection.CreateCommand())
                             {
                                 command.CommandText = "UPDATE contacts SET `order` = @newOrder WHERE id = @contactId";
                                 
                                 var orderParam = command.CreateParameter();
                                 orderParam.ParameterName = "@newOrder";
-                                orderParam.Value = maxOrder;
+                                orderParam.Value = orderValue;
                                 command.Parameters.Add(orderParam);
                                 
                                 var idParam = command.CreateParameter();
@@ -233,7 +251,9 @@ namespace LigChat.Backend.Application.Repositories
                                 command.Parameters.Add(idParam);
                                 
                                 int rowsAffected = command.ExecuteNonQuery();
-                                LogToFile($"Updated contact ID {contactId} with order value {maxOrder}. Rows affected: {rowsAffected}");
+                                LogToFile($"Updated contact ID {contactId} with order value {orderValue} (beginning of queue). Rows affected: {rowsAffected}");
+                                
+                                orderValue++;
                             }
                         }
                     }
