@@ -61,13 +61,13 @@ namespace LigChat.Backend.Domain.DTOs.UserDto
         /// <param name="sectors">Lista de setores associados ao usuário.</param>
         [JsonConstructor]
         public UpdateUserRequestDTO(
-            int? invitedBy,
             string name = "",
             string email = "",
             string phoneWhatsapp = "",
             string? avatarUrl = null,
             bool isAdmin = false,
             bool status = true,
+            int? invitedBy = null,
             List<SectorDTO>? sectors = null)
         {
             Name = name;

@@ -250,6 +250,12 @@ namespace LigChat.Com.Api.Mvc.UserMvc.Service
                 existingUser.PhoneWhatsapp = userDto.PhoneWhatsapp;
             }
             
+            // Atualiza o campo InvitedBy se foi fornecido
+            if (userDto.InvitedBy.HasValue)
+            {
+                existingUser.InvitedBy = userDto.InvitedBy.Value;
+            }
+            
             // Não modificamos isAdmin e Status se estiver atualizando perfil básico
             // Isso preserva os valores existentes dessas flags para evitar perda acidental
             // de permissões durante atualizações de perfil

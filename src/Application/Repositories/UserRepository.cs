@@ -80,6 +80,7 @@ namespace LigChat.Backend.Application.Repositories
                 existingUser.PhoneWhatsapp = user.PhoneWhatsapp;
                 existingUser.IsAdmin = user.IsAdmin;
                 existingUser.Status = user.Status;
+                existingUser.InvitedBy = user.InvitedBy; // Atualiza o campo InvitedBy
 
                 _context.SaveChanges(); // Salva as alterações no banco de dados
                 return existingUser; // Retorna o usuário atualizado

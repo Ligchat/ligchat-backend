@@ -40,6 +40,7 @@ namespace LigChat.Backend.Web.Controller
         }
 
         [HttpGet]
+        [Authorize]
         public IActionResult GetAll(int? invitedBy = null)
         {
             var userListResponse = _userService.GetAll(invitedBy);
@@ -56,6 +57,7 @@ namespace LigChat.Backend.Web.Controller
         }
 
         [HttpGet("{id}")]
+        [Authorize]
         public IActionResult GetById(int id)
         {
             var userResponse = _userService.GetById(id);
@@ -72,12 +74,23 @@ namespace LigChat.Backend.Web.Controller
         }
 
         [HttpPost]
+        [Authorize]
         public IActionResult Save([FromBody] CreateUserRequestDTO userDto)
         {
             if (userDto == null)
             {
                 return BadRequest("User data is required.");
             }
+
+            // Extrair o ID do usuário do token JWT
+            var currentUserId = GetUserIdFromClaims();
+            if (!currentUserId.HasValue)
+            {
+                return Unauthorized(new { Message = "Invalid token or missing user ID." });
+            }
+
+            // Definir automaticamente o campo InvitedBy com o ID do usuário atual
+            userDto.InvitedBy = currentUserId.Value;
 
             var createdUserResponse = _userService.Save(userDto);
             if (createdUserResponse == null)
@@ -118,6 +131,7 @@ namespace LigChat.Backend.Web.Controller
         }
 
         [HttpPut("{id}")]
+        [Authorize]
         public IActionResult Update(int id, [FromBody] UpdateUserRequestDTO userDto)
         {
             if (userDto == null)
@@ -225,6 +239,7 @@ namespace LigChat.Backend.Web.Controller
         }
 
         [HttpDelete("{id}")]
+        [Authorize]
         public IActionResult Delete(int id)
         {
             var userResponse = _userService.GetById(id);
